@@ -1,0 +1,3435 @@
+-- ==============================================================================
+-- 🛡️ Anti-Tamper & Anti-Cheat Mitigation (ป้องกัน BAC Kick บนมือถือและ PC)
+-- ==============================================================================
+pcall(function()
+    if type(getgc) ~= "function" then return end
+    for i, v in getgc(true) do
+        if typeof(v) ~= "table" or getrawmetatable(v) then continue end
+
+        local is_recursive = false
+
+        for _, value in v do
+            if value == v then
+                is_recursive = true
+                break
+            end
+        end
+
+        if not is_recursive then continue end
+
+        local banindex: number?
+        for _, value in v do
+            if value == 1 or value == 2 or value == 3 then
+                banindex = value
+                break
+            end
+        end
+
+        if banindex and v[banindex] == nil then
+            setmetatable(v, {
+                __newindex = function() end
+            })
+        end
+    end
+end)
+
+-- ==============================================================================
+-- PAYOMBØYZ Script HUB - Stage 1: Modern Premium Key UI & Smart Auto-Login
+-- URL: https://raw.githubusercontent.com/Payomboyz0028/Yaranikaaaa/refs/heads/main/Start
+-- Dynamic UI Theme Inspired by Obsidian Glassmorphic 2 Architecture
+-- ==============================================================================
+
+-- ป้องกันการรันซ้ำซ้อนระดับ Global (Smooth Instance Replacement Guard)
+local _ENV = (getgenv and getgenv()) or _G
+
+-- ถ้ามี UI เก่าเปิดค้างอยู่ ให้ทำลายทิ้งก่อนเริ่มรอบใหม่
+pcall(function()
+    if _ENV.__PAYOMBOYZ_CURRENT_GUI and _ENV.__PAYOMBOYZ_CURRENT_GUI.Parent then
+        _ENV.__PAYOMBOYZ_CURRENT_GUI:Destroy()
+    end
+end)
+
+-- รีเซ็ตสถานะเพื่อยอมให้ผู้เล่นกด Execute ใหม่ได้เสมอ (Reload / Re-inject Support)
+_ENV.__PAYOMBOYZ_HUB_ACTIVE = true
+_ENV.__PAYOMBOYZ_SCRIPT_LAUNCHED = false
+
+local _isAuthenticating = false
+local _isScriptLaunched = false
+
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+local LuarmorConfig = {
+    ScriptId = "fcaefd984d0c3cd3a7335c0cf332c860",
+    ProjectId = "fcaefd984d0c3cd3a7335c0cf332c860",
+    HubName = "PAYOMBØYZ Script HUB",
+    SavedKeyFile = "PayomboyZ_LuarmorKey.txt",
+    GetKeyURL = "https://ads.luarmor.net/get_key?for=PBG-fVUxHRHebIHz",
+    DiscordURL = "https://discord.gg/KmrgQwbcMD",
+    VVIPURL = "https://payomboyz.rexzy.xyz/",
+    LogoPath = "PayomboyZ_Logo.jpg",
+    LogoURL = "https://raw.githubusercontent.com/payomboyz333/Anime-Card-Farm/refs/heads/main/543199739_2812856088914181_3062917809445648175_n.jpg",
+    StartURL = "https://raw.githubusercontent.com/Payomboyz0028/Yaranikaaaa/refs/heads/main/Start"
+}
+
+-- ==============================================================================
+-- 🌏 BILINGUAL LANGUAGE SYSTEM (TH / EN) — ปรับภาษาโดย PayomboyZ Hub
+-- ==============================================================================
+local _currentLang = "TH" -- Default: ภาษาไทย
+local LANG_TH = {
+    waitingKey       = "กำลังรอรับ Key...",
+    inputPlaceholder = "กรุณากรอก Key ของคุณ",
+    redeemBtn        = "เข้าสู่ระบบ",
+    getKeyBtn        = "รับ Key ฟรี",
+    discordBtn       = "Discord",
+    copyHwidBtn      = "HWID",
+    premiumBtn       = "สมัคร VVIP",
+    verifying        = "🔍 [1/2] กำลังตรวจสอบคีย์ Luarmor...",
+    superVIPOk       = "👑 [1/2] ยืนยันสิทธิ์ SuperVIP สำเร็จ...",
+    authSuccess      = "🚀 [2/2] เข้าสู่ระบบสำเร็จ! กำลังรัน ",
+    vvipSuccess      = "👑 [VVIP] ยืนยันสิทธิ์ VVIP สำเร็จ! กำลังรัน ",
+    superVIPSuccess  = "👑 [SUPER VIP] สิทธิ์ไม่จำกัดจอ! กำลังรัน ",
+    vvipMapWarn      = "⚠️ แมพนี้ต้องใช้คีย์ VVIP! กำลังเปลี่ยนเส้นทาง...",
+    keyEmpty         = "⚠️ กรุณากรอก Key ก่อนเข้าใช้งาน",
+    keyBad           = "❌ Key ไม่ถูกต้องหรือหมดอายุ",
+    copiedDiscord    = "คัดลอกลิงก์ Discord เรียบร้อยแล้ว!",
+    copiedKey        = "คัดลอกลิงก์รับ Key เรียบร้อยแล้ว!",
+    copiedHwid       = "คัดลอก HWID เรียบร้อยแล้ว!",
+    copiedVvip       = "คัดลอกลิงก์ VVIP เรียบร้อยแล้ว!",
+    xenoBlocked      = "❌ ตัวรัน Xeno ไม่รองรับในแมพ ",
+    xenoBlockedSfx   = " กรุณาใช้ตัวรันอื่น",
+    retrying         = "🔄 รันสคริปต์ไม่สำเร็จ กำลังลองใหม่อัตโนมัติ...",
+    retryFailed      = "⚠️ โหลดสคริปต์ล้มเหลว กดลองใหม่ หรือรอสักครู่",
+    retryBtn         = "🔄 ลองใหม่",
+    langBtn          = "EN",
+}
+local LANG_EN = {
+    waitingKey       = "Waiting for key...",
+    inputPlaceholder = "Enter your key here",
+    redeemBtn        = "LOGIN",
+    getKeyBtn        = "Get Free Key",
+    discordBtn       = "Discord",
+    copyHwidBtn      = "HWID",
+    premiumBtn       = "Get VVIP",
+    verifying        = "🔍 [1/2] Verifying Luarmor key...",
+    superVIPOk       = "👑 [1/2] SuperVIP verified successfully...",
+    authSuccess      = "🚀 [2/2] Login successful! Launching ",
+    vvipSuccess      = "👑 [VVIP] VVIP access granted! Launching ",
+    superVIPSuccess  = "👑 [SUPER VIP] Unlimited access! Launching ",
+    vvipMapWarn      = "⚠️ This map requires a VVIP key! Redirecting...",
+    keyEmpty         = "⚠️ Please enter your key first",
+    keyBad           = "❌ Invalid key or expired",
+    copiedDiscord    = "Discord link copied!",
+    copiedKey        = "Get-key link copied!",
+    copiedHwid       = "HWID copied!",
+    copiedVvip       = "VVIP link copied!",
+    xenoBlocked      = "❌ Xeno executor is not supported in map ",
+    xenoBlockedSfx   = " — please use another executor",
+    retrying         = "🔄 Script failed to run, retrying automatically...",
+    retryFailed      = "⚠️ Script load failed — click retry or wait",
+    retryBtn         = "🔄 Retry",
+    langBtn          = "TH",
+}
+local function L(key)
+    local t = (_currentLang == "TH") and LANG_TH or LANG_EN
+    return t[key] or key
+end
+
+-- ==============================================================================
+-- 🔐 REMOTE SECURE KEY LOADER (ดึงจาก FlowAuth Protected Loader: key.txt)
+-- URL: https://flowauth.net/v1/loaders/e67d7e13a4c4011f16ab036fb9582f8d.lua
+-- แยกลิสต์คีย์ VVIP ออกจาก Log-in.txt 100% เพื่อป้องกันคีย์หลุดบน GitHub
+-- ==============================================================================
+local RemoteKeyDataCache = nil
+local RemoteKeyDataLoading = false
+local RemoteKeyLoaderURL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Key-obfuscated.lua"
+
+local function GetRemoteKeyData()
+    if RemoteKeyDataCache then return RemoteKeyDataCache end
+
+    -- ถ้ากำลังโหลดอยู่ ให้รอจนกว่าจะเสร็จ (ไม่ยิงซ้ำ)
+    if RemoteKeyDataLoading then
+        local waited = 0
+        while RemoteKeyDataLoading and waited < 6 do
+            task.wait(0.2)
+            waited = waited + 0.2
+            if RemoteKeyDataCache then return RemoteKeyDataCache end
+        end
+        return RemoteKeyDataCache
+    end
+    RemoteKeyDataLoading = true
+
+    -- เคลียร์ script_key ชั่วคราวเพื่อให้ FlowAuth โหลดแบบ Keyless ได้
+    local prevKey = (getgenv and getgenv().script_key) or _G.script_key
+    if getgenv then getgenv().script_key = nil end
+    _G.script_key = nil
+
+    local ok, data = pcall(function()
+        local fetchUrl = RemoteKeyLoaderURL
+        if type(fetchUrl) == "string" and fetchUrl:find("raw.githubusercontent.com") and not fetchUrl:find("%?") then
+            fetchUrl = fetchUrl .. "?t=" .. tostring(os.time())
+        end
+        local raw = game:HttpGet(fetchUrl)
+        if raw and type(raw) == "string" and #raw > 30 and not raw:find("404: Not Found") and not raw:find("automated source fetching") then
+            local fn = loadstring(raw)
+            if fn then
+                local res = fn()
+                if type(res) == "table" then
+                    return res
+                end
+            end
+        end
+        -- Fallback ตรวจสอบตัวแปร Global เผื่อ Runtime ปล่อยผ่าน Environment
+        local envKeys = (getgenv and getgenv().__PAYOMBOYZ_VVIP_KEYS) or _G.__PAYOMBOYZ_VVIP_KEYS
+        if type(envKeys) == "table" then
+            return envKeys
+        end
+        return nil
+    end)
+
+    if prevKey then
+        if getgenv then getgenv().script_key = prevKey end
+        _G.script_key = prevKey
+    end
+
+    RemoteKeyDataLoading = false
+
+    if ok and type(data) == "table" then
+        RemoteKeyDataCache = data
+        return RemoteKeyDataCache
+    end
+
+    return nil
+end
+
+local function IsSuperVIPKey(k)
+    if not k or k == "" then return false end
+    k = k:gsub("%s+", "")
+    local engine = GetRemoteKeyData()
+    if engine and type(engine) == "table" then
+        if type(engine.IsSuperVIP) == "function" then
+            return engine.IsSuperVIP(k)
+        elseif engine.SuperVIP and engine.SuperVIP[k] then
+            return true
+        end
+    end
+    return false
+end
+
+local function IsVVIPKey(k)
+    if not k or k == "" then return false end
+    k = k:gsub("%s+", "")
+    if IsSuperVIPKey(k) then return true end
+    local engine = GetRemoteKeyData()
+    if engine and type(engine) == "table" then
+        if type(engine.IsVVIP) == "function" then
+            return engine.IsVVIP(k)
+        elseif engine.VVIP and engine.VVIP[k] then
+            return true
+        end
+    end
+    return false
+end
+
+-- ==============================================================================
+-- 🎮 SMART ROUTER (จบในไฟล์เดียว)
+-- ==============================================================================
+local SupportedGames = {
+    -- [PlaceId] = { Name = "ชื่อเกม", URL = "FlowAuth URL", IsVVIP = true/false }
+    
+    -- 🆓 แมพฟรี (ทุกคนเล่นได้)
+    [13379208636] = { Name = "Attack On Titan Revolution", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/AOTR-obfuscated.lua", IsVVIP = false, NoXeno = true },
+    [14916516914] = { Name = "Attack On Titan Revolution", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/AOTR-obfuscated.lua", IsVVIP = false, NoXeno = true },
+    [14932214603] = { Name = "Attack On Titan Revolution", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/AOTR-obfuscated.lua", IsVVIP = false, NoXeno = true },
+    [125039473548047] = { Name = "Anime Card Farm", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Anime%20Card%20Farm-obfuscated.lua", IsVVIP = false, NoXeno = true },
+    [122446657157717] = { Name = "Arena Sniper", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Sniper%20Arena-obfuscated.lua", IsVVIP = false },
+    [126042865144779] = { Name = "Arena Sniper", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Sniper%20Arena-obfuscated.lua", IsVVIP = false },
+    [119259569670784] = { Name = "Arena Sniper", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Sniper%20Arena-obfuscated.lua", IsVVIP = false },
+    [90165746516953] = { Name = "Arena Sniper", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Sniper%20Arena-obfuscated.lua", IsVVIP = false },
+    [104973076655377] = { Name = "Capybara Vs Plant", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/CapybaraVsPlant-obfuscated.lua", IsVVIP = false },
+    [128736949265057] = { Name = "Gakuran", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Gakurun-obfuscated.lua", IsVVIP = false },
+    [126509999114328] = { Name = "99 Nights", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/99Night-obfuscated.lua", IsVVIP = false },
+    [79546208627805] = { Name = "99 Nights", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/99Night-obfuscated.lua", IsVVIP = false },
+    [2753915549] = { Name = "Blox Fruit", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Blox%20Fruit-obfuscated.lua", IsVVIP = false },
+    [117539213094671] = { Name = "Roll a Gnome", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Roll%20a%20Gnome-obfuscated.lua", IsVVIP = false },
+    [94640181989498] = { Name = "Chicken Fighter", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Grow%20a%20Chicken%20Fighter-obfuscated.lua", IsVVIP = false },
+    [94939256104840] = { Name = "Chicken Fighter", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Grow%20a%20Chicken%20Fighter-obfuscated.lua", IsVVIP = false },
+    [126884695634066] = { Name = "Grow a Garden 1", URL = "https://raw.githubusercontent.com/Payomboyz0028/Yaranikaaaa/refs/heads/main/GGAGG", IsVVIP = false },
+    [97598239454123] = { Name = "Grow a Garden 2", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Grow%20a%20garden%202-obfuscated.lua", IsVVIP = false },
+    [74102906764176] = { Name = "Greedy Grower", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Greedy%20Grower-obfuscated.lua", IsVVIP = false },
+    [124216119978534] = { Name = "Ride a Pet", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Ride%20a%20pet-obfuscated.lua", IsVVIP = false },
+    [76377501906469] = { Name = "Steal An Anime EGG!", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Steal%20Anime%20Egg-obfuscated.lua", IsVVIP = false },
+    [16732694052] = { Name = "FISCH", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/FISCH-obfuscated.lua", IsVVIP = false },
+    [72907489978215] = { Name = "FISCH", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/FISCH-obfuscated.lua", IsVVIP = false },
+    [17722839796] = { Name = "FISCH", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/FISCH-obfuscated.lua", IsVVIP = false },
+    [9794412726] = { Name = "FISCH", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/FISCH-obfuscated.lua", IsVVIP = false },
+    [131716211654599] = { Name = "FISCH", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/FISCH-obfuscated.lua", IsVVIP = false },
+
+    -- 👑 แมพ VVIP (เฉพาะ Special Key หรือ Luarmor ระดับ VIP)
+    [125927821145949] = { Name = "Mine a Mountain", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Mine%20a%20Mountain-obfuscated.lua", IsVVIP = true },
+    [142823291] = { Name = "Murder Mystery 2", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Master%20Mystery%202-obfuscated.lua", IsVVIP = true },
+    [107653945083776] = { Name = "Roll Anime To Fight", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Roll%20Anime%20to%20FIGHT-obfuscated.lua", IsVVIP = true },
+    [133623616308412] = { Name = "Roll Anime To Fight", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Roll%20Anime%20to%20FIGHT-obfuscated.lua", IsVVIP = true },
+    [107778070777162] = { Name = "Steal An Egg", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Steal%20An%20Egg-obfuscated.lua", IsVVIP = true },
+    [84515722934860] = { Name = "Anime Expedition", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Aneme%20Expredition-obfuscated.lua", IsVVIP = true },
+    [117533937949084] = { Name = "Iron Soul", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul-Dungeon-obfuscated.lua", IsVVIP = true },
+    [116456628154258] = { Name = "Iron Soul Boss", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Boss-obfuscated.lua", IsVVIP = true },
+    [132445869992129] = { Name = "Iron Soul Boss", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Boss-obfuscated.lua", IsVVIP = true },
+    [136216144170036] = { Name = "Iron Soul Boss", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Boss-obfuscated.lua", IsVVIP = true },
+    [88838868041067] = { Name = "Iron Soul Tower", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Tower-obfuscated.lua", IsVVIP = true },
+    [91584731222940] = { Name = "Iron Soul Boss", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Boss-obfuscated.lua", IsVVIP = true },
+    [130098968673165] = { Name = "Iron Soul Boss", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Boss-obfuscated.lua", IsVVIP = true },
+    [119524374829397] = { Name = "Iron Soul Boss", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Boss-obfuscated.lua", IsVVIP = true },
+    [80693195250724] = { Name = "Iron Soul Boss", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Boss-obfuscated.lua", IsVVIP = true },
+    [112316840155266] = { Name = "Iron Soul Boss", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Boss-obfuscated.lua", IsVVIP = true },
+    [113290951185459] = { Name = "Anime Dice", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Anime%20Dice-obfuscated.lua", IsVVIP = true },
+    [132785415090516] = { Name = "Iron Soul Boss", URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Boss-obfuscated.lua", IsVVIP = true },
+}
+if getgenv then getgenv().PayomboyZ_SupportedGames = SupportedGames end
+_G.PayomboyZ_SupportedGames = SupportedGames
+
+-- ==============================================================================
+-- 🔒 ฟังก์ชันตรวจสอบ Luarmor แบบแม่นยำสูง (Global Public SDK + VVIP Fast-Pass)
+-- ==============================================================================
+local LuarmorSDKCache = nil
+local LuarmorSDKLoading = false
+local function getLuarmorSDK()
+    if LuarmorSDKCache then return LuarmorSDKCache end
+    -- ป้องกัน concurrent fetch ซ้ำ
+    if LuarmorSDKLoading then
+        local waited = 0
+        while LuarmorSDKLoading and waited < 12 do
+            task.wait(0.25)
+            waited = waited + 0.25
+        end
+        return LuarmorSDKCache
+    end
+    LuarmorSDKLoading = true
+    local ok, lib = pcall(function()
+        return loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
+    end)
+    LuarmorSDKLoading = false
+    if ok and type(lib) == "table" then
+        LuarmorSDKCache = lib
+        return lib
+    end
+    return nil
+end
+
+-- ⚡ Preload Luarmor SDK + Remote VVIP Key List ใน background (ลด cold-start delay)
+task.spawn(function()
+    task.spawn(getLuarmorSDK)
+    task.spawn(GetRemoteKeyData)
+end)
+
+local function VerifyKeyWithLuarmorAPI(key)
+    if not key or key == "" then return false, "⚠️ กรุณากรอก Key ก่อนเข้าใช้งาน" end
+    key = key:gsub("%s+", "")
+    
+    -- 1. ตรวจสอบ SuperVIP (Fast-Path ข้ามการยิง API 100% เฉพาะ SuperVIP คีย์เดียวเท่านั้น)
+    if IsSuperVIPKey(key) then
+        return true, "👑 ยืนยันสิทธิ์ SuperVIP สำเร็จ"
+    end
+
+    -- 2. ตรวจสอบผ่าน KeyEngine (ซึ่งมี Developer Token และระบบ Hash ป้องกันอยู่ภายใน Key-obfuscated.lua)
+    local engine = GetRemoteKeyData()
+    if engine and type(engine.VerifyKey) == "function" then
+        local ok, reason = engine.VerifyKey(key)
+        return ok, reason
+    end
+
+    -- 3. Fallback: ตรวจสอบผ่าน Official Luarmor Public SDK (กรณี KeyEngine ยังโหลดไม่เสร็จ)
+    local sdk = getLuarmorSDK()
+    if sdk then
+        local targetScriptIds = {
+            "fcaefd984d0c3cd3a7335c0cf332c860", -- Project ID PayomboyZ HUB
+            "54dc54601645ac0bc7238ec1a6868759"  -- Loader Script ID
+        }
+        for _, sid in ipairs(targetScriptIds) do
+            local status = nil
+            pcall(function()
+                sdk.script_id = sid
+                status = sdk.check_key(key)
+            end)
+            if status and type(status) == "table" and status.code then
+                if status.code == "KEY_VALID" then
+                    return true, "✅ ยืนยันคีย์ Luarmor สำเร็จ"
+                elseif status.code == "KEY_HWID_LOCKED" then
+                    return false, "❌ คีย์นี้ติดล็อคเครื่องอื่น (กรุณารีเซ็ต HWID ในบอท/เว็บ)"
+                elseif status.code == "KEY_EXPIRED" then
+                    return false, "❌ คีย์นี้หมดอายุแล้ว กรุณากรอกคีย์ใหม่"
+                elseif status.code == "KEY_BANNED" then
+                    return false, "❌ คีย์นี้ถูกระงับการใช้งาน (Banned)"
+                end
+            end
+        end
+    end
+
+    return false, "❌ Key ไม่ถูกต้องหรือหมดอายุ"
+end
+
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local MarketplaceService = game:GetService("MarketplaceService")
+local LocalPlayer = Players.LocalPlayer or Players:GetPropertyChangedSignal("LocalPlayer"):Wait() or Players.LocalPlayer
+
+local function getParentGui()
+    if typeof(gethui) == "function" then
+        local ok, res = pcall(gethui)
+        if ok and res and typeof(res) == "Instance" then return res end
+    end
+    if typeof(cloneref) == "function" then
+        local ok, cg = pcall(function() return cloneref(game:GetService("CoreGui")) end)
+        if ok and cg then return cg end
+    end
+    local ok, cg = pcall(function() return game:GetService("CoreGui") end)
+    if ok and cg then return cg end
+    return LocalPlayer:FindFirstChildOfClass("PlayerGui") or LocalPlayer:WaitForChild("PlayerGui", 5)
+end
+
+-- Safe HTTP Fetch wrapper (supports native game:HttpGet with executor request fallback)
+local function safeFetch(url)
+    if not url or url == "" then return "" end
+
+    -- ลำดับที่ 1: ใช้ native game:HttpGet เสมอเพื่อไม่ให้โดน Bot Detection
+    local ok, content = pcall(game.HttpGet, game, url)
+    if ok and type(content) == "string" and #content > 50 and not content:find("automated source fetching") then
+        return content
+    end
+
+    -- ลำดับที่ 2: ใช้ executor request หาก game:HttpGet มีปัญหา
+    local httprequest = (typeof(request) == "function" and request)
+                     or (typeof(http_request) == "function" and http_request)
+                     or (typeof(syn) == "table" and typeof(syn.request) == "function" and syn.request)
+
+    if httprequest then
+        local okReq, res = pcall(function()
+            local headers = {}
+            -- Only use WinInet User-Agent on Windows PC to prevent mobile Cloudflare bot flags
+            if not (UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled) then
+                headers["User-Agent"] = "Roblox/WinInet"
+            end
+            return httprequest({
+                Url = url,
+                Method = "GET",
+                Headers = headers
+            })
+        end)
+        if okReq and res and res.Body and #res.Body > 50 and not res.Body:find("automated source fetching") then
+            return res.Body
+        end
+    end
+
+    return (ok and content) or ""
+end
+
+-- ฟังก์ชันรัน FlowAuth / Loader ปลายทางพร้อมระบบ Auto-Retry และ Retry UI
+local function RunFlowAuthWithRetry(targetUrl, userKey, maxRetries, onFailCallback)
+    if _isScriptLaunched then
+        warn("[PAYOMBØYZ HUB] Game script is already launched, ignoring duplicate call.")
+        return true
+    end
+
+    maxRetries = maxRetries or 3
+    local lastErr = nil
+
+    -- ส่ง userKey เข้า Environment ของ PAYOMBØYZ สำหรับสคริปต์ลูกข่าย
+    if userKey and userKey ~= "" then
+        pcall(function()
+            if getgenv then
+                getgenv().PayomboyZ_UserKey = userKey
+                getgenv().PayomboyZ_InputKey = userKey
+            end
+            if _G then _G.PayomboyZ_UserKey = userKey end
+        end)
+    end
+
+    local isFlowAuth = type(targetUrl) == "string" and targetUrl:find("flowauth.net")
+    local originalScriptKey = (getgenv and getgenv().script_key) or _G.script_key or script_key
+
+    -- เคลียร์ script_key ชั่วคราวสำหรับ Keyless FlowAuth
+    if isFlowAuth then
+        if getgenv then getgenv().script_key = nil end
+        _G.script_key = nil
+        script_key = nil
+    elseif userKey and userKey ~= "" then
+        if getgenv then getgenv().script_key = userKey end
+        _G.script_key = userKey
+        script_key = userKey
+    end
+
+    -- ขั้นตอนที่ 1: ดาวน์โหลดซอร์สโค้ด (Retry เฉพาะ Network/HTTP ถ้าโหลดไม่ผ่าน)
+    local fetchUrl = targetUrl
+    if type(fetchUrl) == "string" and fetchUrl:find("raw.githubusercontent.com") and not fetchUrl:find("%?") then
+        fetchUrl = fetchUrl .. "?t=" .. tostring(os.time())
+    end
+
+    local source = nil
+    for attempt = 1, maxRetries do
+        local okHttp, content = pcall(game.HttpGet, game, fetchUrl)
+        if okHttp and type(content) == "string" and #content > 50 and not content:find("404: Not Found") and not content:find("automated source fetching") then
+            source = content
+            break
+        else
+            local fallback = safeFetch(fetchUrl)
+            if type(fallback) == "string" and #fallback > 50 and not fallback:find("404: Not Found") and not fallback:find("automated source fetching") then
+                source = fallback
+                break
+            end
+        end
+
+        lastErr = (okHttp and type(content) == "string" and content:find("automated source fetching"))
+            and "FlowAuth Cloudflare rate-limit / bot detection triggered"
+            or "Network response empty or timed out"
+
+        if attempt < maxRetries then
+            warn(string.format("[PAYOMBØYZ HUB] Fetch attempt %d failed: %s — retrying in 0.5s", attempt, tostring(lastErr)))
+            task.wait(0.5)
+        end
+    end
+
+    if not source or #source < 50 then
+        warn("[PAYOMBØYZ HUB] All download attempts failed: " .. tostring(lastErr))
+        if isFlowAuth and originalScriptKey then
+            pcall(function()
+                if getgenv then getgenv().script_key = originalScriptKey end
+                _G.script_key = originalScriptKey
+                script_key = originalScriptKey
+            end)
+        end
+        _isAuthenticating = false
+        if type(onFailCallback) == "function" then
+            onFailCallback(lastErr or "Download failed")
+        end
+        return false
+    end
+
+    -- ขั้นตอนที่ 2: Compile ซอร์สโค้ด
+    local fn, compileErr = loadstring(source, "=PayomboyZ_Game")
+    if not fn then
+        warn("[PAYOMBØYZ HUB] Script compile error: " .. tostring(compileErr))
+        if isFlowAuth and originalScriptKey then
+            pcall(function()
+                if getgenv then getgenv().script_key = originalScriptKey end
+                _G.script_key = originalScriptKey
+                script_key = originalScriptKey
+            end)
+        end
+        _isAuthenticating = false
+        if type(onFailCallback) == "function" then
+            onFailCallback("Compile error: " .. tostring(compileErr))
+        end
+        return false
+    end
+
+    -- ขั้นตอนที่ 3: สั่งรันสคริปต์แบบแยก Thread (รันครั้งเดียวเท่านั้น! ไม่ retry สคริปต์ซ้ำเมื่อมี runtime error)
+    _isScriptLaunched = true
+    _isAuthenticating = false
+
+    task.spawn(function()
+        local runOk, runErr = pcall(fn)
+        if not runOk then
+            warn("[PAYOMBØYZ HUB] Target script runtime notice: " .. tostring(runErr))
+        end
+    end)
+
+    return true
+end
+
+-- ==============================================================================
+-- 🔑 ระบบจัดการ Key (ดึงจากไฟล์ / ดึงจากตัวรัน / บันทึกลงเครื่อง)
+-- ==============================================================================
+local function ClearSavedKeys()
+    pcall(function()
+        local filesToDelete = {
+            LuarmorConfig.SavedKeyFile,
+            "PayomboyZ_LuarmorKey.txt",
+            "PayomboyZ_VVIPKey.txt",
+            "PayomboyZ_SavedKey.txt"
+        }
+        local del = (type(delfile) == "function" and delfile) or (type(deletefile) == "function" and deletefile)
+        for _, file in ipairs(filesToDelete) do
+            pcall(function()
+                if isfile and isfile(file) then
+                    if del then
+                        del(file)
+                    elseif type(writefile) == "function" then
+                        writefile(file, "")
+                    end
+                end
+            end)
+        end
+    end)
+    pcall(function()
+        if getgenv then
+            getgenv().script_key = nil
+            getgenv().PayomboyZ_InputKey = nil
+            getgenv().PayomboyZ_UserKey = nil
+        end
+        script_key = nil
+    end)
+end
+
+local function LoadSavedKey()
+    local saved = ""
+    pcall(function()
+        if isfile and readfile then
+            if isfile(LuarmorConfig.SavedKeyFile) then
+                saved = readfile(LuarmorConfig.SavedKeyFile)
+            elseif isfile("PayomboyZ_LuarmorKey.txt") then
+                saved = readfile("PayomboyZ_LuarmorKey.txt")
+            elseif isfile("PayomboyZ_VVIPKey.txt") then
+                saved = readfile("PayomboyZ_VVIPKey.txt")
+            end
+        end
+    end)
+    if type(saved) == "string" then
+        return saved:gsub("%s+", "")
+    end
+    return ""
+end
+
+local function GetPassedScriptKey()
+    local key = nil
+    pcall(function()
+        local candidates = {
+            getgenv and getgenv().PayomboyZ_UserKey,
+            getgenv and getgenv().PayomboyZ_InputKey,
+            getgenv and getgenv().script_key,
+            script_key,
+            _G and _G.script_key,
+            _G and _G.PayomboyZ_UserKey
+        }
+        for _, k in ipairs(candidates) do
+            if type(k) == "string" and k ~= "" then
+                key = k
+                break
+            end
+        end
+    end)
+    if key and type(key) == "string" then
+        return key:gsub("%s+", "")
+    end
+    return ""
+end
+
+local function SaveKey(userKey)
+    if not userKey or userKey == "" then return end
+    userKey = userKey:gsub("%s+", "")
+    pcall(function()
+        if writefile then
+            writefile(LuarmorConfig.SavedKeyFile, userKey)
+            writefile("PayomboyZ_LuarmorKey.txt", userKey)
+            writefile("PayomboyZ_VVIPKey.txt", userKey)
+        end
+    end)
+end
+
+local function copyText(value)
+    local copier = setclipboard or toclipboard
+    if type(copier) ~= "function" then
+        return false
+    end
+    return pcall(copier, tostring(value))
+end
+
+local function executorName()
+    local name = nil
+    
+    -- 1. identifyexecutor / getgenv().identifyexecutor
+    pcall(function()
+        local id = identifyexecutor or (getgenv and getgenv().identifyexecutor)
+        if type(id) == "function" then
+            local n, v = id()
+            if n and type(n) == "string" and #n > 0 then
+                name = tostring(n)
+            end
+        end
+    end)
+    if name and name ~= "" and name:lower() ~= "unknown" then return name end
+
+    -- 2. getexecutorname / getgenv().getexecutorname
+    pcall(function()
+        local id = getexecutorname or (getgenv and getgenv().getexecutorname)
+        if type(id) == "function" then
+            local n, v = id()
+            if n and type(n) == "string" and #n > 0 then
+                name = tostring(n)
+            end
+        end
+    end)
+    if name and name ~= "" and name:lower() ~= "unknown" then return name end
+
+    -- 3. whatexecutor
+    pcall(function()
+        local id = whatexecutor or (getgenv and getgenv().whatexecutor)
+        if type(id) == "function" then
+            local n = id()
+            if n and type(n) == "string" and #n > 0 then
+                name = tostring(n)
+            end
+        end
+    end)
+    if name and name ~= "" and name:lower() ~= "unknown" then return name end
+
+    -- 4. Environment Signature Probing
+    local env = (getgenv and getgenv()) or _G or {}
+    pcall(function()
+        if env.VOLT_LOADED or env.Volt or env._VOLT then name = "Volt"
+        elseif env.DELTA or env.Delta or env._DELTA then name = "Delta"
+        elseif env.CODEX or env.Codex or env._CODEX then name = "Codex"
+        elseif env.WAVE or env.Wave or env._WAVE then name = "Wave"
+        elseif env.SORANA or env.Sorana or env._SORANA then name = "Sorana"
+        elseif env.SOLARA or env.Solara or env._SOLARA then name = "Solara"
+        elseif env.XENO or env.Xeno or env._XENO then name = "Xeno"
+        elseif env.SWIFT or env.Swift or env._SWIFT then name = "Swift"
+        elseif env.ARCEUS or env.Arceus or env.ArceusX then name = "Arceus X"
+        elseif env.FLUXUS or env.fluxus or env.FLUXUS_LOADED then name = "Fluxus"
+        elseif env.VEGA_LOADED or env.VegaX then name = "Vega X"
+        elseif env.TRIGON or env.Trigon then name = "Trigon"
+        elseif env.HYDROGEN or env.Hydrogen then name = "Hydrogen"
+        elseif env.KRNL_LOADED or env.krnl then name = "KRNL"
+        elseif syn and type(syn) == "table" then name = "Synapse"
+        end
+    end)
+    if name and name ~= "" then return name end
+
+    return "Unknown"
+end
+
+local function isXenoExecutor()
+    local name = executorName():lower()
+    local env = (getgenv and getgenv()) or _G or {}
+    return name:find("xeno") ~= nil or env.XENO ~= nil or env.Xeno ~= nil or env._XENO ~= nil
+end
+
+local function deviceName()
+    if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then
+        return "Mobile"
+    end
+    return "PC"
+end
+
+local function readableHwid()
+    return "Secured"
+end
+
+-- ==============================================================================
+-- 🎮 ระบบอ่านข้อมูลแมพจาก Smart Router
+-- ==============================================================================
+local function GetDynamicSupportedGames()
+    local games = {}
+    for pid, data in pairs(SupportedGames) do
+        if data and data.Name then
+            games[pid] = data.Name .. (data.IsVVIP and " (VVIP)" or "")
+        end
+    end
+    return games
+end
+
+local function resolveGameName()
+    local placeId = game.PlaceId
+    local gameData = SupportedGames[placeId]
+    if gameData and gameData.Name then
+        return gameData.Name .. (gameData.IsVVIP and " (VVIP)" or "")
+    end
+    return "Place: " .. tostring(placeId)
+end
+
+-- ==============================================================================
+-- 🖼️ ระบบโหลดรูปภาพโลโก้จาก Github (ใช้ใน Intro & Service Banner ตาม Intro.md)
+-- ==============================================================================
+local customIntroLogoAsset = nil
+local isDownloadingIntroLogo = false
+
+local function loadIntroLogoImage()
+    if customIntroLogoAsset then return customIntroLogoAsset end
+    local logoUrl = "https://raw.githubusercontent.com/aslamdunk7/PayomboyZKnowledge/main/nobg_Gemini_Generated_Image_mgkp6ymgkp6ymgkp.png"
+    local fileName = "payomboyz_intro_logo.png"
+    
+    pcall(function()
+        if typeof(isfile) == "function" and isfile(fileName) then
+            if typeof(getcustomasset) == "function" or typeof(getsynasset) == "function" then
+                local getAsset = getcustomasset or getsynasset
+                customIntroLogoAsset = getAsset(fileName)
+            end
+        end
+    end)
+
+    if not customIntroLogoAsset and not isDownloadingIntroLogo then
+        isDownloadingIntroLogo = true
+        task.spawn(function()
+            pcall(function()
+                if typeof(writefile) == "function" and (typeof(getcustomasset) == "function" or typeof(getsynasset) == "function") then
+                    local getAsset = getcustomasset or getsynasset
+                    local ok, imageBytes = pcall(game.HttpGet, game, logoUrl)
+                    if ok and imageBytes and #imageBytes > 0 then
+                        writefile(fileName, imageBytes)
+                        if typeof(isfile) == "function" and isfile(fileName) then
+                            customIntroLogoAsset = getAsset(fileName)
+                        end
+                    end
+                end
+            end)
+            isDownloadingIntroLogo = false
+        end)
+    end
+
+    if not customIntroLogoAsset then
+        customIntroLogoAsset = "rbxassetid://10723346959"
+    end
+    return customIntroLogoAsset
+end
+
+local function LoadCustomLogo(imageLabel)
+    task.spawn(function()
+        pcall(function()
+            imageLabel.Image = loadIntroLogoImage()
+        end)
+    end)
+end
+
+-- ==============================================================================
+-- 📢 ระบบแจ้งเตือน Toast
+-- ==============================================================================
+local function ShowToast(title, message, isError)
+    pcall(function()
+        local parentGui = getParentGui()
+        local ToastGui = Instance.new("ScreenGui")
+        ToastGui.Name = "PayomboyZ_ToastUI"
+        ToastGui.ResetOnSpawn = false
+        ToastGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+        local pOk = pcall(function() ToastGui.Parent = parentGui end)
+        if not pOk then
+            ToastGui.Parent = LocalPlayer:FindFirstChildOfClass("PlayerGui") or LocalPlayer:WaitForChild("PlayerGui", 5)
+        end
+
+        local Frame = Instance.new("Frame")
+        Frame.Size = UDim2.new(0, 330, 0, 60)
+        Frame.Position = UDim2.new(1, -350, 0, 20)
+        Frame.BackgroundColor3 = Color3.fromRGB(20, 10, 14)
+        Frame.BorderSizePixel = 0
+        Frame.Parent = ToastGui
+
+        local Corner = Instance.new("UICorner")
+        Corner.CornerRadius = UDim.new(0, 10)
+        Corner.Parent = Frame
+
+        local Stroke = Instance.new("UIStroke")
+        Stroke.Color = isError and Color3.fromRGB(255, 60, 60) or Color3.fromRGB(255, 55, 85)
+        Stroke.Transparency = 0.2
+        Stroke.Thickness = 1.5
+        Stroke.Parent = Frame
+
+        local TText = Instance.new("TextLabel")
+        TText.Size = UDim2.new(1, -20, 0, 20)
+        TText.Position = UDim2.new(0, 10, 0, 8)
+        TText.BackgroundTransparency = 1
+        TText.Text = title
+        TText.Font = Enum.Font.GothamBold
+        TText.TextSize = 13
+        TText.TextColor3 = Color3.fromRGB(255, 55, 85)
+        TText.TextXAlignment = Enum.TextXAlignment.Left
+        TText.Parent = Frame
+
+        local MText = Instance.new("TextLabel")
+        MText.Size = UDim2.new(1, -20, 0, 20)
+        MText.Position = UDim2.new(0, 10, 0, 30)
+        MText.BackgroundTransparency = 1
+        MText.Text = message
+        MText.Font = Enum.Font.Gotham
+        MText.TextSize = 11
+        MText.TextColor3 = Color3.fromRGB(242, 218, 228)
+        MText.TextXAlignment = Enum.TextXAlignment.Left
+        MText.Parent = Frame
+
+        task.delay(4, function()
+            if ToastGui then ToastGui:Destroy() end
+        end)
+    end)
+end
+
+-- ==============================================================================
+-- 🔑 ฟังก์ชันส่ง Key เข้าสู่ FlowAuth Engine (Auto-Login Handler)
+-- ==============================================================================
+local function PassToKeyChecker(key)
+    if not key or key == "" then return end
+    key = key:gsub("%s+", "")
+
+    if _isAuthenticating or _isScriptLaunched then
+        warn("[PAYOMBØYZ HUB] Auth or script launch already in progress, skipping duplicate call.")
+        return
+    end
+    _isAuthenticating = true
+
+    task.spawn(function()
+        local placeId = game.PlaceId
+        local gameData = SupportedGames[placeId]
+        local targetUrl = gameData and gameData.URL or "https://raw.githubusercontent.com/Payomboyz0028/Yaranikaaaa/refs/heads/main/WaitKey"
+        local mapName = gameData and gameData.Name or "Game Hub"
+
+        -- ตรวจสอบตัวรัน Xeno เฉพาะในแมพที่ไม่รองรับ
+        if isXenoExecutor() and gameData and gameData.NoXeno then
+            _isAuthenticating = false
+            ClearSavedKeys()
+            CreateLoaderUI("❌ ตัวรัน Xeno ไม่รองรับในแมพ " .. mapName .. " กรุณาใช้ตัวรันอื่น", key)
+            return
+        end
+
+        local isSuperVIP = IsSuperVIPKey(key)
+        local isVVIP = IsVVIPKey(key)
+        local isAuthed = false
+        local authReason = nil
+
+        if isSuperVIP then
+            isAuthed = true
+        else
+            isAuthed, authReason = VerifyKeyWithLuarmorAPI(key)
+        end
+
+        if isAuthed then
+            SaveKey(key)
+
+            -- ดึง Target URL จาก KeyEngine ก่อนเป็นอันดับแรกเพื่อความปลอดภัยสูงสุด
+            local engine = GetRemoteKeyData()
+            local resolvedUrl = nil
+            if engine and type(engine.GetGameURL) == "function" then
+                resolvedUrl = engine.GetGameURL(placeId, key)
+            end
+
+            if resolvedUrl then
+                targetUrl = resolvedUrl
+            else
+                -- Fallback เดิมหาก KeyEngine ยังไม่ได้อัปเดตบน GitHub
+                if gameData and gameData.IsVVIP and not isVVIP then
+                    targetUrl = "https://raw.githubusercontent.com/Payomboyz0028/Yaranikaaaa/refs/heads/main/WaitKey"
+                end
+            end
+
+            -- รัน FlowAuth / Loader ปลายทาง พร้อม Error Callback
+            task.defer(function()
+                RunFlowAuthWithRetry(targetUrl, key, 3, function(errMsg)
+                    _isAuthenticating = false
+                    _isScriptLaunched = false
+                    task.spawn(function()
+                        CreateLoaderUI(L("retryFailed"), key)
+                    end)
+                end)
+            end)
+        else
+            _isAuthenticating = false
+            ClearSavedKeys()
+            CreateLoaderUI(authReason or "❌ Key เดิมหมดอายุแล้ว กรุณากรอก Key ใหม่", "")
+        end
+    end)
+end
+
+-- ==============================================================================
+-- 🎮 GAME INFO POPUP & TELEPORT SYSTEM
+-- ==============================================================================
+local function ShowHopConfirmPopup(gameData)
+    local placeId = gameData.PlaceId
+    if not placeId or placeId == 0 then return end
+
+    local TeleportService = game:GetService("TeleportService")
+    ShowToast(
+        "🚀 กำลังย้ายแมพ...",
+        "กำลังส่งคุณไปยัง " .. (gameData.Name or "Game") .. " (PlaceId: " .. tostring(placeId) .. ")",
+        false
+    )
+
+    task.spawn(function()
+        local teleportOk = false
+        -- วิธีที่ 1: Teleport ธรรมดา
+        pcall(function()
+            TeleportService:Teleport(placeId)
+            teleportOk = true
+        end)
+        if teleportOk then return end
+
+        task.wait(0.4)
+        -- วิธีที่ 2: TeleportAsync
+        pcall(function()
+            local options = Instance.new("TeleportOptions")
+            options.ShouldReserveServer = false
+            TeleportService:TeleportAsync(placeId, {LocalPlayer}, options)
+            teleportOk = true
+        end)
+        if teleportOk then return end
+
+        task.wait(0.4)
+        -- วิธีที่ 3: Copy PlaceId หากเกมล็อกการวาร์ปข้ามเซิร์ฟเวอร์
+        pcall(function()
+            local copier = setclipboard or toclipboard
+            if type(copier) == "function" then copier(tostring(placeId)) end
+        end)
+        ShowToast(
+            "❌ แมพบล็อกการ Teleport",
+            "คัดลอก PlaceId: " .. tostring(placeId) .. " ให้แล้ว กรุณาเข้าแมพด้วยตัวเอง",
+            true
+        )
+    end)
+end
+
+-- ==============================================================================
+-- ⚡ CRIMSON LIGHTNING HUB STYLE MODERN LOADER UI GENERATOR FOR PAYOMBOYZ HUB
+-- ==============================================================================
+local function CreateLoaderUI(initialStatus, defaultKeyText)
+    local parentGui = getParentGui()
+
+    pcall(function()
+        if parentGui then
+            for _, child in ipairs(parentGui:GetChildren()) do
+                if child:IsA("ScreenGui") and (child.Name == "PayomboyZ_LoaderUI" or child.Name == "RobloxLoaderGui") then
+                    child:Destroy()
+                end
+            end
+        end
+    end)
+
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "PayomboyZ_LoaderUI"
+    gui.ResetOnSpawn = false
+    gui.IgnoreGuiInset = true
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    gui.DisplayOrder = 99999
+
+    local parentOk = pcall(function()
+        gui.Parent = parentGui
+    end)
+    if not parentOk then
+        gui.Parent = LocalPlayer:FindFirstChildOfClass("PlayerGui") or LocalPlayer:WaitForChild("PlayerGui", 5)
+    end
+    _ENV.__PAYOMBOYZ_CURRENT_GUI = gui
+
+    local trackedConnections = {}
+    local trackedThreads = {}
+
+    local COLORS = {
+        backdrop = Color3.fromRGB(6, 1, 3),
+        shell = Color3.fromRGB(12, 3, 6),
+        shellStroke = Color3.fromRGB(255, 20, 50),
+        glass = Color3.fromRGB(20, 5, 10),
+        glassDeep = Color3.fromRGB(15, 3, 7),
+        glassRaised = Color3.fromRGB(35, 8, 16),
+        userPanel = Color3.fromRGB(18, 4, 8),
+        surface = Color3.fromRGB(28, 6, 12),
+        surfaceRaised = Color3.fromRGB(48, 10, 20),
+        surfaceHover = Color3.fromRGB(72, 16, 30),
+        surfacePressed = Color3.fromRGB(22, 5, 10),
+        input = Color3.fromRGB(12, 3, 6),
+        inputFocus = Color3.fromRGB(30, 6, 14),
+        divider = Color3.fromRGB(140, 20, 45),
+        primary = Color3.fromRGB(255, 20, 50),
+        primaryHover = Color3.fromRGB(255, 60, 90),
+        primaryPressed = Color3.fromRGB(185, 12, 35),
+        secondary = Color3.fromRGB(40, 10, 18),
+        secondaryHover = Color3.fromRGB(58, 15, 26),
+        secondaryPressed = Color3.fromRGB(26, 6, 12),
+        text = Color3.fromRGB(255, 255, 255),
+        textMuted = Color3.fromRGB(245, 200, 212),
+        textFaint = Color3.fromRGB(195, 135, 150),
+        cyan = Color3.fromRGB(255, 30, 65),
+        lightningCore = Color3.fromRGB(255, 225, 235),
+        lightningGlow = Color3.fromRGB(255, 20, 55),
+        success = Color3.fromRGB(46, 224, 140),
+        warning = Color3.fromRGB(255, 185, 70),
+        danger = Color3.fromRGB(255, 45, 65),
+        premium = Color3.fromRGB(255, 20, 55),
+        premiumSurface = Color3.fromRGB(28, 6, 14),
+        premiumAction = Color3.fromRGB(255, 20, 55),
+        premiumHover = Color3.fromRGB(255, 60, 95),
+        premiumPressed = Color3.fromRGB(185, 12, 35),
+        disabled = Color3.fromRGB(40, 12, 18),
+    }
+
+    local MOTION = {
+        quick = 0.12,
+        normal = 0.22,
+        slow = 0.34,
+    }
+
+    local LUCIDE = {
+        user = { image = "rbxassetid://16898613869", size = Vector2.new(48, 48), offset = Vector2.new(661, 869) },
+        settings = { image = "rbxassetid://16898613777", size = Vector2.new(48, 48), offset = Vector2.new(771, 257) },
+        shield = { image = "rbxassetid://16898613777", size = Vector2.new(48, 48), offset = Vector2.new(869, 0) },
+        globe = { image = "rbxassetid://16898613509", size = Vector2.new(48, 48), offset = Vector2.new(771, 563) },
+        save = { image = "rbxassetid://16898613699", size = Vector2.new(48, 48), offset = Vector2.new(918, 453) },
+        minus = { image = "rbxassetid://7734000129" },
+        x = { image = "rbxassetid://7743878857" },
+        key = { image = "rbxassetid://7733965118" },
+        ["shield-check"] = { image = "rbxassetid://7734056411" },
+        ["message-circle"] = { image = "rbxassetid://7733993311" },
+        copy = { image = "rbxassetid://7733764083" },
+        monitor = { image = "rbxassetid://7734002839" },
+        smartphone = { image = "rbxassetid://7734058979" },
+        gamepad = { image = "rbxassetid://7733799901" },
+        clock = { image = "rbxassetid://7733734848" },
+        wifi = { image = "rbxassetid://7743878148" },
+        ["external-link"] = { image = "rbxassetid://7743866903" },
+        ["alert-circle"] = { image = "rbxassetid://7733658271" },
+        ["check-circle"] = { image = "rbxassetid://7733919427" },
+        info = { image = "rbxassetid://7733964719" },
+        server = { image = "rbxassetid://7734053426" },
+    }
+
+    local DESKTOP_WIDTH = 930
+    local COMPACT_WIDTH = 644
+    local SHELL_HEIGHT = 620
+    local LIGHTNING_SPARKS_DESKTOP = 28
+    local LIGHTNING_SPARKS_COMPACT = 12
+    local activeTweens = setmetatable({}, { __mode = "k" })
+
+    local clickSound = nil
+    pcall(function()
+        clickSound = Instance.new("Sound")
+        clickSound.Name = "PayomboyZClick"
+        clickSound.SoundId = "rbxassetid://6895079853"
+        clickSound.Volume = 0.42
+        clickSound.PlaybackSpeed = 1
+        clickSound.Looped = false
+        clickSound.Parent = gui
+    end)
+
+    local function playClickSound()
+        pcall(function()
+            if clickSound then
+                clickSound.TimePosition = 0
+                clickSound:Play()
+            end
+        end)
+    end
+
+    local function create(className, properties, targetParent)
+        local object = Instance.new(className)
+        for key, value in pairs(properties or {}) do
+            object[key] = value
+        end
+        object.Parent = targetParent
+        return object
+    end
+
+    local function round(object, radius)
+        return create("UICorner", { CornerRadius = UDim.new(0, radius or 12) }, object)
+    end
+
+    local function glassSurface(object, topColor, bottomColor, transparency, radius)
+        object.BackgroundColor3 = topColor or COLORS.glass
+        object.BackgroundTransparency = transparency or 0.3
+        object.BorderSizePixel = 0
+        object.ClipsDescendants = true
+        round(object, radius or 14)
+        create("UIGradient", {
+            Color = ColorSequence.new(
+                topColor or COLORS.glassRaised,
+                bottomColor or COLORS.glassDeep
+            ),
+            Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0.02),
+                NumberSequenceKeypoint.new(1, 0.10),
+            }),
+            Rotation = 105,
+        }, object)
+        return object
+    end
+
+    local function applyLucideData(icon, iconName)
+        local data = LUCIDE[iconName] or LUCIDE.info
+        icon.Image = data.image
+        if data.offset and data.size then
+            icon.ImageRectOffset = data.offset
+            icon.ImageRectSize = data.size
+        else
+            icon.ImageRectOffset = Vector2.new(0, 0)
+            icon.ImageRectSize = Vector2.new(0, 0)
+        end
+    end
+
+    local function lucideIcon(parentObject, iconName, position, size, color, zIndex)
+        local icon = create("ImageLabel", {
+            Name = "LucideIcon",
+            BackgroundTransparency = 1,
+            Position = position,
+            Size = size,
+            ImageColor3 = color or COLORS.textMuted,
+            ScaleType = Enum.ScaleType.Fit,
+            ZIndex = zIndex or 4,
+        }, parentObject)
+        applyLucideData(icon, iconName)
+        return icon
+    end
+
+    local function playTween(object, duration, properties, easingStyle, easingDirection, channel)
+        local bucket = activeTweens[object]
+        if not bucket then
+            bucket = {}
+            activeTweens[object] = bucket
+        end
+        local key = channel or "default"
+        local previous = bucket[key]
+        if previous then previous:Cancel() end
+        local tween = TweenService:Create(
+            object,
+            TweenInfo.new(
+                duration,
+                easingStyle or Enum.EasingStyle.Quint,
+                easingDirection or Enum.EasingDirection.Out
+            ),
+            properties
+        )
+        bucket[key] = tween
+        tween.Completed:Connect(function()
+            if bucket[key] == tween then
+                bucket[key] = nil
+            end
+        end)
+        tween:Play()
+        return tween
+    end
+
+    local function textLabel(parentObject, text, position, size, font, textSize, color, alignment)
+        return create("TextLabel", {
+            BackgroundTransparency = 1,
+            Position = position,
+            Size = size,
+            Font = font or Enum.Font.Gotham,
+            Text = text,
+            TextColor3 = color or COLORS.text,
+            TextSize = textSize or 13,
+            TextXAlignment = alignment or Enum.TextXAlignment.Left,
+            TextYAlignment = Enum.TextYAlignment.Center,
+            TextTruncate = Enum.TextTruncate.AtEnd,
+        }, parentObject)
+    end
+
+    local function bindButtonMotion(button, baseColor, hoverColor, pressedColor)
+        local scale = button:FindFirstChildOfClass("UIScale")
+        local function animate(color, value)
+            if button:GetAttribute("MotionDisabled") then return end
+            playTween(button, MOTION.quick, { BackgroundColor3 = color })
+            if scale then
+                playTween(scale, MOTION.quick, { Scale = value })
+            end
+        end
+
+        button.MouseEnter:Connect(function() animate(hoverColor, 1.015) end)
+        button.MouseLeave:Connect(function() animate(baseColor, 1) end)
+        button.MouseButton1Down:Connect(function() animate(pressedColor, 0.975) end)
+        button.MouseButton1Up:Connect(function() animate(hoverColor, 1.01) end)
+    end
+
+    local function makeButton(parentObject, name, text, position, size, baseColor, hoverColor, pressedColor, iconName)
+        local button = create("TextButton", {
+            Name = name,
+            Position = position,
+            Size = size,
+            BackgroundColor3 = baseColor,
+            BorderSizePixel = 0,
+            AutoButtonColor = false,
+            Active = true,
+            Text = "",
+            TextColor3 = COLORS.text,
+        }, parentObject)
+        round(button, 11)
+        create("UIScale", { Scale = 1 }, button)
+        local content = create("Frame", {
+            Name = "ButtonContent",
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            Position = UDim2.fromScale(0.5, 0.5),
+            Size = UDim2.fromOffset(0, 18),
+            AutomaticSize = Enum.AutomaticSize.X,
+            BackgroundTransparency = 1,
+            ZIndex = 5,
+        }, button)
+        create("UIListLayout", {
+            FillDirection = Enum.FillDirection.Horizontal,
+            HorizontalAlignment = Enum.HorizontalAlignment.Center,
+            VerticalAlignment = Enum.VerticalAlignment.Center,
+            Padding = UDim.new(0, iconName and 8 or 0),
+            SortOrder = Enum.SortOrder.LayoutOrder,
+        }, content)
+        if iconName then
+            local icon = lucideIcon(content, iconName, UDim2.new(), UDim2.fromOffset(16, 16), COLORS.text, 5)
+            icon.LayoutOrder = 1
+            icon.ImageTransparency = 0.08
+        end
+        local label = textLabel(content, text, UDim2.new(), UDim2.fromOffset(0, 18), Enum.Font.GothamBold, 13, COLORS.text, Enum.TextXAlignment.Center)
+        label.Name = "ButtonLabel"
+        label.AutomaticSize = Enum.AutomaticSize.X
+        label.LayoutOrder = 2
+        label.TextTruncate = Enum.TextTruncate.None
+        label.ZIndex = 5
+        bindButtonMotion(button, baseColor, hoverColor or COLORS.surfaceHover, pressedColor or COLORS.surfacePressed)
+        button.Activated:Connect(function()
+            if button.Active and not button:GetAttribute("MotionDisabled") then
+                playClickSound()
+            end
+        end)
+        return button
+    end
+
+    local function setButtonText(button, value)
+        local label = button:FindFirstChild("ButtonLabel", true)
+        if label then label.Text = tostring(value or "") end
+    end
+
+    local function setButtonTextSize(button, value)
+        local label = button:FindFirstChild("ButtonLabel", true)
+        if label then label.TextSize = value end
+    end
+
+    local function makeIconButton(parentObject, name, iconName, position, baseColor, hoverColor, pressedColor)
+        local button = create("ImageButton", {
+            Name = name,
+            Position = position,
+            Size = UDim2.fromOffset(32, 32),
+            BackgroundColor3 = baseColor,
+            BackgroundTransparency = 0.18,
+            BorderSizePixel = 0,
+            AutoButtonColor = false,
+            Active = true,
+            Image = "",
+        }, parentObject)
+        round(button, 10)
+        create("UIScale", { Scale = 1 }, button)
+        lucideIcon(button, iconName, UDim2.fromOffset(8, 8), UDim2.fromOffset(16, 16), COLORS.textMuted, 5)
+        bindButtonMotion(button, baseColor, hoverColor, pressedColor)
+        button.Activated:Connect(function()
+            if button.Active and not button:GetAttribute("MotionDisabled") then
+                playClickSound()
+            end
+        end)
+        return button
+    end
+
+    local function setButtonEnabled(button, enabled)
+        button.Active = enabled
+        button:SetAttribute("MotionDisabled", not enabled)
+        playTween(button, MOTION.quick, {
+            BackgroundColor3 = enabled and COLORS.secondary or COLORS.disabled,
+        })
+        local label = button:FindFirstChild("ButtonLabel", true)
+        if label then playTween(label, MOTION.quick, { TextTransparency = enabled and 0 or 0.28 }) end
+        local icon = button:FindFirstChild("LucideIcon", true)
+        if icon then playTween(icon, MOTION.quick, { ImageTransparency = enabled and 0.08 or 0.45 }) end
+    end
+
+    -- Backdrop
+    local backdrop = create("Frame", {
+        Name = "Backdrop",
+        Size = UDim2.fromScale(1, 1),
+        BackgroundColor3 = COLORS.backdrop,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+    }, gui)
+    create("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(18, 6, 12)),
+            ColorSequenceKeypoint.new(0.55, Color3.fromRGB(12, 5, 8)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 8, 16)),
+        }),
+        Rotation = 18,
+    }, backdrop)
+
+    -- Shell Frame
+    local shell = create("CanvasGroup", {
+        Name = "Shell",
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.fromScale(0.5, 0.5),
+        Size = UDim2.fromOffset(DESKTOP_WIDTH, SHELL_HEIGHT),
+        BackgroundTransparency = 1,
+        GroupTransparency = 1,
+    }, backdrop)
+    local shellScale = create("UIScale", { Scale = 0.96 }, shell)
+
+    local shellChrome = create("Frame", {
+        Name = "Chrome",
+        Size = UDim2.fromScale(1, 1),
+        BorderSizePixel = 0,
+        ZIndex = 2,
+    }, shell)
+    glassSurface(shellChrome, COLORS.glassRaised, COLORS.shell, 0.12, 22)
+
+    local shellStroke = create("UIStroke", {
+        Name = "ShellStroke",
+        Color = Color3.fromRGB(255, 25, 55),
+        Thickness = 1.8,
+        Transparency = 0.15,
+    }, shellChrome)
+
+    create("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 55, 85)),
+            ColorSequenceKeypoint.new(0.48, Color3.fromRGB(255, 18, 48)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 8, 25)),
+        }),
+        Rotation = 35,
+    }, shellStroke)
+
+    -- ⚡ AMBIENT LIGHTNING FLASH (ZIndex 80 - OVER PANELS & CARDS)
+    local ambientLightningFlash = create("Frame", {
+        Name = "AmbientLightningFlash",
+        Size = UDim2.fromScale(1, 1),
+        BackgroundColor3 = Color3.fromRGB(255, 20, 50),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Active = false,
+        ZIndex = 80,
+    }, shellChrome)
+    round(ambientLightningFlash, 22)
+
+    -- ⚡ CRIMSON LIGHTNING & ELECTRIC ARCS ENGINE (ZIndex 85 - IN FRONT OF ALL UI)
+    local lightningLayer = create("Frame", {
+        Name = "LightningLayer",
+        Size = UDim2.fromScale(1, 1),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ClipsDescendants = true,
+        Active = false,
+        ZIndex = 85,
+    }, shellChrome)
+
+    -- Procedural High-Voltage Crimson Lightning Bolt Strike Function
+    local function strikeLightning(targetFrame, numSegments)
+        if not targetFrame or not targetFrame.Parent then return end
+        local w = targetFrame.AbsoluteSize.X
+        local h = targetFrame.AbsoluteSize.Y
+        if w <= 20 or h <= 20 then
+            w = DESKTOP_WIDTH
+            h = SHELL_HEIGHT
+        end
+
+        local startX = math.random(30, math.max(50, math.floor(w - 30)))
+        local startY = math.random(4, 20)
+        local endX = math.clamp(startX + math.random(-240, 240), 25, w - 25)
+        local endY = math.random(math.floor(h * 0.45), math.floor(h * 0.94))
+
+        local segCount = numSegments or math.random(6, 9)
+        local pts = {}
+        table.insert(pts, Vector2.new(startX, startY))
+        for i = 1, segCount - 1 do
+            local alpha = i / segCount
+            local midX = startX + (endX - startX) * alpha + math.random(-42, 42)
+            local midY = startY + (endY - startY) * alpha + math.random(-20, 20)
+            table.insert(pts, Vector2.new(midX, midY))
+        end
+        table.insert(pts, Vector2.new(endX, endY))
+
+        -- Optional Jagged Electric Fork Branch
+        local forkPts = {}
+        if #pts >= 4 and math.random(1, 10) >= 3 then
+            local forkStartIndex = math.random(2, #pts - 2)
+            local forkOrigin = pts[forkStartIndex]
+            local forkEndX = math.clamp(forkOrigin.X + math.random(-120, 120), 20, w - 20)
+            local forkEndY = math.clamp(forkOrigin.Y + math.random(35, 110), 35, h - 20)
+            local forkMidX = (forkOrigin.X + forkEndX) / 2 + math.random(-25, 25)
+            local forkMidY = (forkOrigin.Y + forkEndY) / 2 + math.random(-14, 14)
+            table.insert(forkPts, forkOrigin)
+            table.insert(forkPts, Vector2.new(forkMidX, forkMidY))
+            table.insert(forkPts, Vector2.new(forkEndX, forkEndY))
+        end
+
+        local segFrames = {}
+        local function renderSegments(pointList, coreColor, strokeColor, thickness, zIdx)
+            for i = 1, #pointList - 1 do
+                local p1 = pointList[i]
+                local p2 = pointList[i + 1]
+                local diff = p2 - p1
+                local len = diff.Magnitude
+                local angle = math.deg(math.atan2(diff.Y, diff.X))
+                local mid = (p1 + p2) / 2
+
+                local seg = create("Frame", {
+                    Name = "CrimsonBoltSeg",
+                    AnchorPoint = Vector2.new(0.5, 0.5),
+                    Position = UDim2.fromOffset(mid.X, mid.Y),
+                    Size = UDim2.fromOffset(len + 1, thickness or 2.8),
+                    Rotation = angle,
+                    BackgroundColor3 = coreColor or Color3.fromRGB(255, 245, 252),
+                    BorderSizePixel = 0,
+                    Active = false,
+                    ZIndex = zIdx or 95,
+                }, targetFrame)
+
+                create("UIStroke", {
+                    Color = strokeColor or Color3.fromRGB(255, 18, 48),
+                    Thickness = 3.2,
+                    Transparency = 0.05,
+                }, seg)
+
+                table.insert(segFrames, seg)
+            end
+        end
+
+        -- Render primary bolt & secondary fork
+        renderSegments(pts, Color3.fromRGB(255, 248, 252), Color3.fromRGB(255, 18, 48), 3.2, 95)
+        if #forkPts > 1 then
+            renderSegments(forkPts, Color3.fromRGB(255, 220, 235), Color3.fromRGB(255, 30, 65), 2.2, 94)
+        end
+
+        -- Flash ambient crimson glow across entire shell
+        if ambientLightningFlash and ambientLightningFlash.Parent then
+            ambientLightningFlash.BackgroundTransparency = 0.82
+            task.delay(0.05, function()
+                if ambientLightningFlash and ambientLightningFlash.Parent then
+                    playTween(ambientLightningFlash, 0.18, { BackgroundTransparency = 1 }, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+                end
+            end)
+        end
+
+        -- Multi-stage electric crackle flicker & fade
+        task.delay(0.06, function()
+            for _, seg in ipairs(segFrames) do
+                if seg and seg.Parent then
+                    seg.BackgroundTransparency = 0.3
+                end
+            end
+        end)
+        task.delay(0.12, function()
+            for _, seg in ipairs(segFrames) do
+                if seg and seg.Parent then
+                    seg.BackgroundTransparency = 0.05
+                end
+            end
+        end)
+        task.delay(0.18, function()
+            for _, seg in ipairs(segFrames) do
+                if seg and seg.Parent then
+                    playTween(seg, 0.08, { BackgroundTransparency = 1 })
+                end
+            end
+        end)
+        task.delay(0.28, function()
+            for _, seg in ipairs(segFrames) do
+                if seg and seg.Parent then
+                    seg:Destroy()
+                end
+            end
+        end)
+    end
+
+    -- ⚡ DYNAMIC ELECTRIC PLASMA SPARKS ANIMATION (REPLACING SNOW WITH CRIMSON EMBERS)
+    task.spawn(function()
+        local isMobile = (deviceName() == "Mobile")
+        local maxSparks = isMobile and 16 or 32
+        local sparks = {}
+        for i = 1, maxSparks do
+            local isCore = (i % 3 == 0)
+            local sparkSize = isCore and math.random(3, 4) or math.random(2, 3)
+            local spark = create("Frame", {
+                Name = "PlasmaSpark",
+                Size = UDim2.fromOffset(sparkSize, sparkSize),
+                Position = UDim2.new(math.random(), 0, math.random(), 0),
+                BackgroundColor3 = isCore and Color3.fromRGB(255, 242, 248) or Color3.fromRGB(255, 30, 65),
+                BackgroundTransparency = math.random(10, 50) / 100,
+                BorderSizePixel = 0,
+                Active = false,
+                ZIndex = 88,
+            }, lightningLayer)
+            round(spark, 4)
+
+            create("UIStroke", {
+                Color = Color3.fromRGB(255, 18, 50),
+                Thickness = 1.2,
+                Transparency = 0.15,
+            }, spark)
+
+            sparks[#sparks + 1] = {
+                frame = spark,
+                vx = math.random(-18, 18) / 10000,
+                vy = math.random(18, 42) / 10000,
+                jitterTimer = math.random(4, 16),
+                baseX = spark.Position.X.Scale,
+                baseY = spark.Position.Y.Scale,
+            }
+        end
+
+        local sparkConn
+        sparkConn = RunService.Heartbeat:Connect(function()
+            if not gui or not gui.Parent then
+                if sparkConn then sparkConn:Disconnect() end
+                return
+            end
+            if shell and shell.Visible then
+                for _, s in ipairs(sparks) do
+                    s.baseY = s.baseY + s.vy
+                    s.baseX = (s.baseX + s.vx) % 1.0
+                    if s.baseY > 1.05 then s.baseY = -0.05 end
+
+                    -- High-voltage erratic electrostatic jitter
+                    s.jitterTimer = s.jitterTimer - 1
+                    local jitterX = 0
+                    local jitterY = 0
+                    if s.jitterTimer <= 0 then
+                        s.jitterTimer = math.random(3, 12)
+                        jitterX = math.random(-12, 12) / 1000
+                        jitterY = math.random(-6, 6) / 1000
+                        s.frame.BackgroundTransparency = math.random(10, 60) / 100
+                    end
+
+                    s.frame.Position = UDim2.new(s.baseX + jitterX, 0, s.baseY + jitterY, 0)
+                end
+            end
+        end)
+        table.insert(trackedConnections, sparkConn)
+
+        -- Periodic High-Voltage Procedural Lightning Bolt Loop
+        local boltThread = task.spawn(function()
+            task.wait(0.4)
+            while gui and gui.Parent do
+                if shell and shell.Visible then
+                    pcall(function()
+                        strikeLightning(lightningLayer, math.random(6, 9))
+                    end)
+                end
+                task.wait(math.random(16, 32) / 10)
+            end
+        end)
+        table.insert(trackedThreads, boltThread)
+    end)
+
+    -- 💎 UNIVERSAL DRAGGABLE TOGGLE CAPSULE WITH RED LIGHTNING, IMAGE & METRICS
+    local isMobileDevice = (deviceName() == "Mobile")
+    local capW = isMobileDevice and 160 or 230
+    local capH = isMobileDevice and 46 or 58
+    local toggleCapsule = create("Frame", {
+        Name = "ObsidianToggleCapsule",
+        Size = UDim2.fromOffset(capW, capH),
+        Position = isMobileDevice and UDim2.new(0, 10, 0.22, 0) or UDim2.new(0, 15, 0.5, -29),
+        BackgroundColor3 = COLORS.shell,
+        BackgroundTransparency = 0.12,
+        BorderSizePixel = 0,
+        ClipsDescendants = true,
+        ZIndex = 99999,
+    }, gui)
+    round(toggleCapsule, 16)
+
+    local tcStroke = create("UIStroke", {
+        Color = Color3.fromRGB(255, 30, 65),
+        Thickness = 1.6,
+        Transparency = 0.15,
+    }, toggleCapsule)
+
+    create("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 60, 90)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 20, 50)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(140, 10, 25)),
+        }),
+        Rotation = 45,
+    }, tcStroke)
+
+    -- ⚡ MINI ELECTRIC SPARKS LAYER INSIDE TOGGLE CAPSULE
+    local capsuleLightningLayer = create("Frame", {
+        Name = "CapsuleLightningLayer",
+        Size = UDim2.fromScale(1, 1),
+        BackgroundTransparency = 1,
+        Active = false,
+        ClipsDescendants = true,
+        ZIndex = 8,
+    }, toggleCapsule)
+
+    task.spawn(function()
+        local isMobile = (deviceName() == "Mobile")
+        local maxSparks = isMobile and 6 or 12
+        local sparks = {}
+        for i = 1, maxSparks do
+            local spark = create("Frame", {
+                Name = "CapsuleSpark",
+                Size = UDim2.fromOffset(math.random(2, 3), math.random(2, 3)),
+                Position = UDim2.new(math.random(), 0, math.random(), 0),
+                BackgroundColor3 = Color3.fromRGB(255, 45, 80),
+                BackgroundTransparency = math.random(15, 55) / 100,
+                BorderSizePixel = 0,
+                Active = false,
+                ZIndex = 8,
+            }, capsuleLightningLayer)
+            round(spark, 2)
+
+            create("UIStroke", {
+                Color = Color3.fromRGB(255, 20, 55),
+                Thickness = 1,
+                Transparency = 0.2,
+            }, spark)
+
+            sparks[#sparks + 1] = {
+                frame = spark,
+                vx = math.random(-12, 12) / 10000,
+                vy = math.random(16, 38) / 10000,
+                pos = spark.Position.Y.Scale,
+            }
+        end
+
+        local capSparkConn
+        capSparkConn = RunService.Heartbeat:Connect(function()
+            if not gui or not gui.Parent or not toggleCapsule or not toggleCapsule.Parent then
+                if capSparkConn then capSparkConn:Disconnect() end
+                return
+            end
+            if toggleCapsule and toggleCapsule.Visible then
+                for _, data in ipairs(sparks) do
+                    data.pos = data.pos + data.vy
+                    if data.pos > 1.05 then data.pos = -0.05 end
+                    local newX = (data.frame.Position.X.Scale + data.vx) % 1.0
+                    data.frame.Position = UDim2.new(newX, 0, data.pos, 0)
+                end
+            end
+        end)
+        table.insert(trackedConnections, capSparkConn)
+
+        -- Mini capsule lightning flash
+        local capBoltThread = task.spawn(function()
+            while gui and gui.Parent do
+                task.wait(math.random(25, 45) / 10)
+                if toggleCapsule and toggleCapsule.Visible then
+                    pcall(function()
+                        strikeLightning(capsuleLightningLayer, 3)
+                    end)
+                end
+            end
+        end)
+        table.insert(trackedThreads, capBoltThread)
+    end)
+
+    -- 🖼️ AVATAR IMAGE BOX
+    local capAvatarSize = isMobileDevice and 32 or 42
+    local capAvatarFrame = create("Frame", {
+        Size = UDim2.fromOffset(capAvatarSize, capAvatarSize),
+        Position = UDim2.new(0, 6, 0.5, -capAvatarSize / 2),
+        BackgroundColor3 = COLORS.glassDeep,
+        BorderSizePixel = 0,
+        ZIndex = 3,
+    }, toggleCapsule)
+    round(capAvatarFrame, capAvatarSize / 2)
+
+    create("UIStroke", {
+        Color = COLORS.primary,
+        Thickness = 1.5,
+    }, capAvatarFrame)
+
+    local capAvatarImg = create("ImageLabel", {
+        Size = UDim2.fromScale(1, 1),
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://0",
+        ZIndex = 4,
+    }, capAvatarFrame)
+    round(capAvatarImg, capAvatarSize / 2)
+
+    task.spawn(function()
+        pcall(function()
+            capAvatarImg.Image = Players:GetUserThumbnailAsync(
+                LocalPlayer.UserId,
+                Enum.ThumbnailType.HeadShot,
+                Enum.ThumbnailSize.Size420x420
+            )
+        end)
+    end)
+
+    -- 👤 USERNAME & ⚡ METRICS
+    local capLabelX = isMobileDevice and 44 or 56
+    local capUserLabel = textLabel(toggleCapsule, "@" .. LocalPlayer.Name, UDim2.new(0, capLabelX, 0, isMobileDevice and 6 or 10), UDim2.new(1, -capLabelX - 4, 0, isMobileDevice and 15 or 18), Enum.Font.GothamBold, isMobileDevice and 10 or 12, COLORS.text)
+    capUserLabel.ZIndex = 3
+
+    local capMetricsLabel = textLabel(toggleCapsule, "⚡ PAYOMBØYZ", UDim2.new(0, capLabelX, 0, isMobileDevice and 22 or 28), UDim2.new(1, -capLabelX - 4, 0, isMobileDevice and 14 or 16), Enum.Font.GothamBold, isMobileDevice and 8 or 10, COLORS.cyan)
+    capMetricsLabel.ZIndex = 3
+
+    -- 🖱️ CLICKABLE BUTTON & DRAGGABLE HANDLER
+    local capBtn = create("TextButton", {
+        Size = UDim2.fromScale(1, 1),
+        BackgroundTransparency = 1,
+        Text = "",
+        ZIndex = 10,
+    }, toggleCapsule)
+
+    local tDragging, tDragInput, tDragStart, tStartPos
+    local hasDragged = false
+
+    capBtn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            tDragging = true
+            hasDragged = false
+            tDragStart = input.Position
+            tStartPos = toggleCapsule.Position
+        end
+    end)
+
+    capBtn.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            tDragInput = input
+        end
+    end)
+
+    local tDragEndedConn = UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            tDragging = false
+        end
+    end)
+
+    local tDragConn = UserInputService.InputChanged:Connect(function(input)
+        if input == tDragInput and tDragging then
+            local delta = input.Position - tDragStart
+            if math.abs(delta.X) > 3 or math.abs(delta.Y) > 3 then
+                hasDragged = true
+            end
+            toggleCapsule.Position = UDim2.new(tStartPos.X.Scale, tStartPos.X.Offset + delta.X, tStartPos.Y.Scale, tStartPos.Y.Offset + delta.Y)
+        end
+    end)
+
+    capBtn.MouseButton1Click:Connect(function()
+        if not hasDragged then
+            playClickSound()
+            shell.Visible = not shell.Visible
+        end
+    end)
+
+    -- ⌨️ KEYBIND TOGGLE (KEY [K] / [RightControl])
+    local keybindConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        if input.KeyCode == Enum.KeyCode.K or input.KeyCode == Enum.KeyCode.RightControl then
+            shell.Visible = not shell.Visible
+        end
+    end)
+
+    gui.Destroying:Connect(function()
+        pcall(function()
+            if tDragEndedConn then tDragEndedConn:Disconnect() end
+            if tDragConn then tDragConn:Disconnect() end
+            if keybindConn then keybindConn:Disconnect() end
+        end)
+    end)
+
+    -- Left Column (User Panel)
+    local userPanel = create("Frame", {
+        Name = "UserInfo",
+        Position = UDim2.fromOffset(8, 8),
+        Size = UDim2.fromOffset(278, 604),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ZIndex = 3,
+    }, shellChrome)
+
+    -- Right Column (Main Panel)
+    local mainPanel = create("Frame", {
+        Name = "Main",
+        Position = UDim2.fromOffset(294, 8),
+        Size = UDim2.fromOffset(628, 604),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ZIndex = 3,
+    }, shellChrome)
+
+    local columnDivider = create("Frame", {
+        Name = "ColumnDivider",
+        Position = UDim2.fromOffset(286, 20),
+        Size = UDim2.new(0, 1, 1, -40),
+        BackgroundColor3 = COLORS.divider,
+        BackgroundTransparency = 0.84,
+        BorderSizePixel = 0,
+        ZIndex = 3,
+    }, shellChrome)
+
+    -- Left Panel Content with Dual-Tab Navigation (User Info | Game Support)
+    local userTabBtn = create("TextButton", {
+        Name = "TabUserInfo",
+        Position = UDim2.fromOffset(14, 10),
+        Size = UDim2.fromOffset(116, 32),
+        BackgroundColor3 = COLORS.surfaceRaised,
+        BorderSizePixel = 0,
+        AutoButtonColor = false,
+        Text = "",
+        ZIndex = 5,
+    }, userPanel)
+    round(userTabBtn, 8)
+    local userTabIcon = lucideIcon(userTabBtn, "user", UDim2.fromOffset(8, 8), UDim2.fromOffset(14, 14), COLORS.cyan, 6)
+    local userTabLabel = textLabel(userTabBtn, "User Info", UDim2.fromOffset(26, 0), UDim2.new(1, -28, 1, 0), Enum.Font.GothamBold, 10, COLORS.cyan)
+    userTabLabel.ZIndex = 6
+
+    local gamesTabBtn = create("TextButton", {
+        Name = "TabGameSupport",
+        Position = UDim2.fromOffset(136, 10),
+        Size = UDim2.fromOffset(120, 32),
+        BackgroundColor3 = COLORS.glassDeep,
+        BackgroundTransparency = 0.4,
+        BorderSizePixel = 0,
+        AutoButtonColor = false,
+        Text = "",
+        ZIndex = 5,
+    }, userPanel)
+    round(gamesTabBtn, 8)
+    local gamesTabIcon = lucideIcon(gamesTabBtn, "gamepad", UDim2.fromOffset(8, 8), UDim2.fromOffset(14, 14), COLORS.textFaint, 6)
+    local gamesTabLabel = textLabel(gamesTabBtn, "Games (12)", UDim2.fromOffset(26, 0), UDim2.new(1, -28, 1, 0), Enum.Font.GothamMedium, 10, COLORS.textFaint)
+    gamesTabLabel.ZIndex = 6
+
+    local backToKeyBtn = makeButton(userPanel, "BackToKey", "⬅ เข้าสู่ระบบ", UDim2.new(1, -156, 0, 10), UDim2.fromOffset(116, 32), COLORS.primary, COLORS.primaryHover, COLORS.primaryPressed)
+    backToKeyBtn.Visible = false
+    backToKeyBtn.ZIndex = 6
+    setButtonTextSize(backToKeyBtn, 10)
+
+    local closeInUserBtn = makeIconButton(userPanel, "CloseInUser", "x", UDim2.new(1, -36, 0, 10), COLORS.surfaceRaised, Color3.fromRGB(74, 38, 53), Color3.fromRGB(54, 27, 40))
+    closeInUserBtn.Visible = false
+    closeInUserBtn.ZIndex = 6
+
+    -- Drag bar for userPanel when in mobile view
+    local userPanelDrag = create("Frame", {
+        Name = "UserPanelDrag",
+        Position = UDim2.fromOffset(0, 0),
+        Size = UDim2.new(1, -165, 0, 48),
+        BackgroundTransparency = 1,
+        Active = true,
+        ZIndex = 4,
+    }, userPanel)
+
+    create("Frame", {
+        Position = UDim2.fromOffset(18, 48),
+        Size = UDim2.new(1, -36, 0, 1),
+        BackgroundColor3 = COLORS.divider,
+        BackgroundTransparency = 0.72,
+        BorderSizePixel = 0,
+    }, userPanel)
+
+    local userInfoContainer = create("Frame", {
+        Name = "UserInfoContainer",
+        Position = UDim2.fromOffset(0, 50),
+        Size = UDim2.new(1, 0, 1, -50),
+        BackgroundTransparency = 1,
+        ZIndex = 4,
+    }, userPanel)
+
+    local gameSupportContainer = create("Frame", {
+        Name = "GameSupportContainer",
+        Position = UDim2.fromOffset(0, 50),
+        Size = UDim2.new(1, 0, 1, -50),
+        BackgroundTransparency = 1,
+        Visible = false,
+        ZIndex = 4,
+    }, userPanel)
+
+    local function switchLeftTab(tabName)
+        playClickSound()
+        pcall(function()
+            strikeLightning(lightningLayer, 5)
+        end)
+        if tabName == "user" then
+            userInfoContainer.Visible = true
+            gameSupportContainer.Visible = false
+            playTween(userTabBtn, MOTION.quick, { BackgroundColor3 = COLORS.surfaceRaised, BackgroundTransparency = 0 })
+            playTween(userTabLabel, MOTION.quick, { TextColor3 = COLORS.cyan })
+            userTabLabel.Font = Enum.Font.GothamBold
+            userTabIcon.ImageColor3 = COLORS.cyan
+
+            playTween(gamesTabBtn, MOTION.quick, { BackgroundColor3 = COLORS.glassDeep, BackgroundTransparency = 0.4 })
+            playTween(gamesTabLabel, MOTION.quick, { TextColor3 = COLORS.textFaint })
+            gamesTabLabel.Font = Enum.Font.GothamMedium
+            gamesTabIcon.ImageColor3 = COLORS.textFaint
+        else
+            userInfoContainer.Visible = false
+            gameSupportContainer.Visible = true
+            playTween(gamesTabBtn, MOTION.quick, { BackgroundColor3 = COLORS.surfaceRaised, BackgroundTransparency = 0 })
+            playTween(gamesTabLabel, MOTION.quick, { TextColor3 = COLORS.cyan })
+            gamesTabLabel.Font = Enum.Font.GothamBold
+            gamesTabIcon.ImageColor3 = COLORS.cyan
+
+            playTween(userTabBtn, MOTION.quick, { BackgroundColor3 = COLORS.glassDeep, BackgroundTransparency = 0.4 })
+            playTween(userTabLabel, MOTION.quick, { TextColor3 = COLORS.textFaint })
+            userTabLabel.Font = Enum.Font.GothamMedium
+            userTabIcon.ImageColor3 = COLORS.textFaint
+        end
+    end
+
+    userTabBtn.MouseButton1Click:Connect(function() switchLeftTab("user") end)
+    gamesTabBtn.MouseButton1Click:Connect(function() switchLeftTab("games") end)
+
+    local avatarHalo = create("Frame", {
+        Name = "AvatarHalo",
+        Position = UDim2.new(0.5, -50, 0, 8),
+        Size = UDim2.fromOffset(100, 100),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+    }, userInfoContainer)
+    round(avatarHalo, 50)
+    local avatarRing = create("Frame", {
+        Name = "AvatarGradientRing",
+        Position = UDim2.fromOffset(4, 4),
+        Size = UDim2.fromOffset(92, 92),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+    }, avatarHalo)
+    round(avatarRing, 46)
+    local avatarRingStroke = create("UIStroke", {
+        Name = "AvatarRingStroke",
+        Color = COLORS.cyan,
+        Thickness = 3,
+        Transparency = 0,
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+    }, avatarRing)
+    create("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 75, 110)),
+            ColorSequenceKeypoint.new(0.52, COLORS.primary),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 35, 70)),
+        }),
+        Rotation = 35,
+    }, avatarRingStroke)
+    local avatarSeparator = create("Frame", {
+        Name = "AvatarSeparator",
+        Position = UDim2.fromOffset(2, 2),
+        Size = UDim2.fromOffset(88, 88),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+    }, avatarRing)
+    round(avatarSeparator, 44)
+    local avatar = create("ImageLabel", {
+        Position = UDim2.fromOffset(2, 2),
+        Size = UDim2.fromOffset(84, 84),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Image = "rbxassetid://0",
+        ScaleType = Enum.ScaleType.Crop,
+    }, avatarSeparator)
+    round(avatar, 42)
+    local onlineDot = create("Frame", {
+        Name = "OnlineDotBacking",
+        Position = UDim2.new(1, -26, 1, -26),
+        Size = UDim2.fromOffset(22, 22),
+        BackgroundColor3 = COLORS.shell,
+        BorderSizePixel = 0,
+    }, avatarHalo)
+    round(onlineDot, 11)
+    local onlineCore = create("Frame", {
+        Position = UDim2.fromOffset(5, 5),
+        Size = UDim2.fromOffset(12, 12),
+        BackgroundColor3 = COLORS.success,
+        BorderSizePixel = 0,
+    }, onlineDot)
+    round(onlineCore, 6)
+    local onlinePulseUp = TweenService:Create(
+        onlineCore,
+        TweenInfo.new(1.4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+        { BackgroundColor3 = Color3.fromRGB(90, 255, 186) }
+    )
+    onlinePulseUp:Play()
+    gui.Destroying:Connect(function() onlinePulseUp:Cancel() end)
+
+    task.spawn(function()
+        pcall(function()
+            avatar.Image = Players:GetUserThumbnailAsync(
+                LocalPlayer.UserId,
+                Enum.ThumbnailType.HeadShot,
+                Enum.ThumbnailSize.Size420x420
+            )
+        end)
+    end)
+
+    local displayName = LocalPlayer and (LocalPlayer.DisplayName or LocalPlayer.Name) or "PayomboyZ User"
+    local userName = LocalPlayer and LocalPlayer.Name or "unknown"
+    textLabel(userInfoContainer, displayName, UDim2.fromOffset(18, 114), UDim2.new(1, -36, 0, 22), Enum.Font.GothamBold, 14, COLORS.text, Enum.TextXAlignment.Center)
+    textLabel(userInfoContainer, "@" .. userName, UDim2.fromOffset(18, 135), UDim2.new(1, -36, 0, 18), Enum.Font.Gotham, 10, COLORS.textFaint, Enum.TextXAlignment.Center)
+
+    local detectedGame = resolveGameName()
+    local infoGroup = create("Frame", {
+        Name = "ProfileDetails",
+        Position = UDim2.fromOffset(18, 164),
+        Size = UDim2.new(1, -36, 0, 166),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+    }, userInfoContainer)
+    local execDisplayName = executorName()
+    local execColor = COLORS.cyan
+    if isXenoExecutor() then
+        local pId = game.PlaceId
+        local gData = SupportedGames[pId]
+        if gData and gData.NoXeno then
+            execDisplayName = "Xeno (แมพนี้ไม่รองรับ)"
+            execColor = COLORS.danger
+        else
+            execDisplayName = "Xeno (จำกัด)"
+            execColor = COLORS.warning
+        end
+    else
+        execColor = COLORS.success
+    end
+
+    local stats = {
+        { "Executor", execDisplayName, "monitor", execColor },
+        { "Device", deviceName(), deviceName() == "Mobile" and "smartphone" or "monitor", COLORS.textMuted },
+        { "HWID", readableHwid() and "Available" or "Security By Luarmor", "shield", COLORS.textMuted },
+        { "Game", detectedGame, "gamepad", COLORS.success },
+    }
+    for index, item in ipairs(stats) do
+        local y = (index - 1) * 41
+        lucideIcon(infoGroup, item[3], UDim2.fromOffset(14, y + 12), UDim2.fromOffset(16, 16), item[4], 5)
+        textLabel(infoGroup, item[1], UDim2.fromOffset(42, y + 4), UDim2.fromOffset(78, 15), Enum.Font.GothamMedium, 9, COLORS.textFaint)
+        textLabel(infoGroup, item[2], UDim2.fromOffset(42, y + 18), UDim2.new(1, -56, 0, 18), Enum.Font.GothamMedium, 10, item[4])
+        if index < #stats then
+            create("Frame", {
+                Position = UDim2.fromOffset(42, y + 40),
+                Size = UDim2.new(1, -56, 0, 1),
+                BackgroundColor3 = COLORS.divider,
+                BackgroundTransparency = 0.84,
+                BorderSizePixel = 0,
+            }, infoGroup)
+        end
+    end
+
+    local metricsStrip = create("Frame", {
+        Name = "Metrics",
+        Position = UDim2.fromOffset(18, 342),
+        Size = UDim2.new(1, -36, 0, 66),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+    }, userInfoContainer)
+    create("Frame", {
+        Position = UDim2.new(0.5, 0, 0, 12),
+        Size = UDim2.new(0, 1, 1, -24),
+        BackgroundColor3 = COLORS.divider,
+        BackgroundTransparency = 0.78,
+        BorderSizePixel = 0,
+    }, metricsStrip)
+
+    local sessionCard = create("Frame", {
+        Size = UDim2.new(0.5, 0, 1, 0),
+        BackgroundTransparency = 1,
+    }, metricsStrip)
+    lucideIcon(sessionCard, "clock", UDim2.fromOffset(14, 16), UDim2.fromOffset(16, 16), COLORS.cyan, 5)
+    textLabel(sessionCard, "Session", UDim2.fromOffset(38, 9), UDim2.new(1, -48, 0, 18), Enum.Font.GothamMedium, 9, COLORS.textFaint)
+    local sessionText = textLabel(sessionCard, "00:00", UDim2.fromOffset(38, 27), UDim2.new(1, -48, 0, 22), Enum.Font.GothamBold, 12, COLORS.cyan)
+
+    local pingCard = create("Frame", {
+        Position = UDim2.fromScale(0.5, 0),
+        Size = UDim2.new(0.5, 0, 1, 0),
+        BackgroundTransparency = 1,
+    }, metricsStrip)
+    lucideIcon(pingCard, "wifi", UDim2.fromOffset(14, 16), UDim2.fromOffset(16, 16), COLORS.success, 5)
+    textLabel(pingCard, "Ping", UDim2.fromOffset(38, 9), UDim2.new(1, -48, 0, 18), Enum.Font.GothamMedium, 9, COLORS.textFaint)
+    local pingText = textLabel(pingCard, "-- ms", UDim2.fromOffset(38, 27), UDim2.new(1, -48, 0, 22), Enum.Font.GothamBold, 12, COLORS.success)
+
+    local connectionCard = create("Frame", {
+        Position = UDim2.fromOffset(18, 452),
+        Size = UDim2.new(1, -36, 0, 68),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+    }, userInfoContainer)
+    lucideIcon(connectionCard, "check-circle", UDim2.fromOffset(14, 24), UDim2.fromOffset(20, 20), COLORS.success, 5)
+    textLabel(connectionCard, "Connected to PAYOMBØYZ HUB", UDim2.fromOffset(44, 11), UDim2.new(1, -56, 0, 24), Enum.Font.GothamBold, 12, COLORS.success)
+    textLabel(connectionCard, "PAYOMBØYZ HUB is ready", UDim2.fromOffset(44, 35), UDim2.new(1, -56, 0, 18), Enum.Font.Gotham, 9, COLORS.textMuted)
+
+    -- 🎮 GAME SUPPORT PANEL CONTENT
+    local gameSupportHeader = create("Frame", {
+        Position = UDim2.fromOffset(14, 6),
+        Size = UDim2.new(1, -28, 0, 36),
+        BackgroundTransparency = 1,
+    }, gameSupportContainer)
+
+    lucideIcon(gameSupportHeader, "gamepad", UDim2.fromOffset(4, 8), UDim2.fromOffset(18, 18), COLORS.cyan, 5)
+    textLabel(gameSupportHeader, "GAME SUPPORT", UDim2.fromOffset(28, 4), UDim2.new(1, -30, 0, 16), Enum.Font.GothamBold, 11, COLORS.cyan)
+    textLabel(gameSupportHeader, "Official Supported Game Loaders", UDim2.fromOffset(28, 20), UDim2.new(1, -30, 0, 14), Enum.Font.GothamMedium, 9, COLORS.textFaint)
+
+    local gamesScroll = create("ScrollingFrame", {
+        Name = "GamesScrollList",
+        Position = UDim2.fromOffset(14, 46),
+        Size = UDim2.new(1, -28, 1, -54),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        CanvasSize = UDim2.fromScale(0, 0),
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        ScrollBarThickness = 3,
+        ScrollBarImageColor3 = COLORS.cyan,
+        ScrollBarImageTransparency = 0.4,
+        ClipsDescendants = true,
+    }, gameSupportContainer)
+
+    create("UIListLayout", {
+        FillDirection = Enum.FillDirection.Vertical,
+        Padding = UDim.new(0, 8),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+    }, gamesScroll)
+
+    local supportedGamesList = {
+        -- FREE GAMES
+        {
+            Name = "Attack On Titan Rev.",
+            FullName = "Attack On Titan Revolution",
+            PlaceId = 13379208636,
+            AltPlaceIds = { 14916516914, 14932214603 },
+            IconId = 13379208636,
+            Type = "FREE",
+            Keywords = "AOTR • Titan Farm",
+        },
+        {
+            Name = "Anime Card Farm",
+            FullName = "Anime Card Farm",
+            PlaceId = 125039473548047,
+            AltPlaceIds = {},
+            IconId = 125039473548047,
+            Type = "FREE",
+            Keywords = "Auto Pack • Reroll",
+        },
+        {
+            Name = "Arena Sniper",
+            FullName = "Arena Sniper",
+            PlaceId = 122446657157717,
+            AltPlaceIds = { 126042865144779, 119259569670784, 90165746516953 },
+            IconId = 122446657157717,
+            Type = "FREE",
+            Keywords = "Auto Kill • Sniper",
+        },
+        {
+            Name = "Roll Anime To Fight",
+            FullName = "Roll Anime To Fight",
+            PlaceId = 107653945083776,
+            AltPlaceIds = {},
+            IconId = 107653945083776,
+            Type = "FREE",
+            Keywords = "RATF • Auto Roll",
+        },
+        {
+            Name = "Gakuran",
+            FullName = "Gakuran",
+            PlaceId = 128736949265057,
+            AltPlaceIds = {},
+            IconId = 128736949265057,
+            Type = "FREE",
+            Keywords = "GKR • Auto Farm",
+        },
+        {
+            Name = "99 Nights",
+            FullName = "99 Night in the forest",
+            PlaceId = 126509999114328,
+            AltPlaceIds = { 79546208627805 },
+            IconId = 126509999114328,
+            Type = "FREE",
+            Keywords = "99Nights • Forest",
+        },
+        {
+            Name = "Blox Fruit",
+            FullName = "Blox Fruit",
+            PlaceId = 2753915549,
+            AltPlaceIds = {},
+            IconId = 2753915549,
+            Type = "FREE",
+            Keywords = "BF • Auto Farm",
+        },
+        {
+            Name = "Roll a Gnome",
+            FullName = "Roll a Gnome",
+            PlaceId = 117539213094671,
+            AltPlaceIds = {},
+            IconId = 117539213094671,
+            Type = "FREE",
+            Keywords = "Gnome • Auto Roll",
+        },
+
+        -- VVIP GAMES
+        {
+            Name = "Mine a Mountain",
+            FullName = "Mine a Mountain",
+            PlaceId = 125927821145949,
+            AltPlaceIds = {},
+            IconId = 125927821145949,
+            Type = "VVIP",
+            Keywords = "MaM • Auto Mine",
+        },
+        {
+            Name = "Murder Mystery 2",
+            FullName = "Murder Mystery 2",
+            PlaceId = 142823291,
+            AltPlaceIds = {},
+            IconId = 142823291,
+            Type = "VVIP",
+            Keywords = "MM2 • Coin Farm",
+        },
+        {
+            Name = "Capybara Vs Plant",
+            FullName = "Capybara Vs Plant",
+            PlaceId = 104973076655377,
+            AltPlaceIds = {},
+            IconId = 104973076655377,
+            Type = "VVIP",
+            Keywords = "CvsP • Auto Plant",
+        },
+        {
+            Name = "Steal An Egg",
+            FullName = "Steal An Egg",
+            PlaceId = 107778070777162,
+            AltPlaceIds = {},
+            IconId = 107778070777162,
+            Type = "VVIP",
+            Keywords = "SaE • Auto Egg",
+        },
+        {
+            Name = "Anime Expedition",
+            FullName = "Anime Expedition",
+            PlaceId = 84515722934860,
+            AltPlaceIds = {},
+            IconId = 84515722934860,
+            Type = "VVIP",
+            Keywords = "AE • Auto Expedition",
+        },
+        {
+            Name = "Iron Soul",
+            FullName = "Iron Soul",
+            PlaceId = 117533937949084,
+            AltPlaceIds = { 116456628154258, 132445869992129 },
+            IconId = 117533937949084,
+            Type = "VVIP",
+            Keywords = "IRS • Auto Boss",
+        },
+    }
+
+    pcall(function()
+        local dynamicMapData = GetDynamicSupportedGames()
+        local existingPlaceIds = {}
+        for _, g in ipairs(supportedGamesList) do
+            existingPlaceIds[g.PlaceId] = true
+            if g.AltPlaceIds then
+                for _, alt in ipairs(g.AltPlaceIds) do existingPlaceIds[alt] = true end
+            end
+        end
+        for pid, gName in pairs(dynamicMapData) do
+            if not existingPlaceIds[pid] then
+                existingPlaceIds[pid] = true
+                local isVvip = gName:find("%(VVIP%)")
+                local cleanName = gName:gsub("%s*%(VVIP%)", "")
+                table.insert(supportedGamesList, {
+                    Name = cleanName,
+                    FullName = cleanName,
+                    PlaceId = pid,
+                    AltPlaceIds = {},
+                    IconId = pid,
+                    Type = isVvip and "VVIP" or "FREE",
+                    Keywords = (isVvip and "VVIP" or "FREE") .. " • Auto Farm",
+                })
+            end
+        end
+    end)
+
+    local currentPlaceId = game.PlaceId
+    for index, gameData in ipairs(supportedGamesList) do
+        local isCurrentGame = (currentPlaceId == gameData.PlaceId)
+        if not isCurrentGame and gameData.AltPlaceIds then
+            for _, altId in ipairs(gameData.AltPlaceIds) do
+                if currentPlaceId == altId then
+                    isCurrentGame = true
+                    break
+                end
+            end
+        end
+
+        local gameCard = create("Frame", {
+            Name = "GameCard_" .. index,
+            Size = UDim2.new(1, 0, 0, 62),
+            BackgroundColor3 = isCurrentGame and COLORS.surfaceRaised or COLORS.glassDeep,
+            BackgroundTransparency = 0.25,
+            BorderSizePixel = 0,
+            LayoutOrder = index,
+        }, gamesScroll)
+        round(gameCard, 10)
+
+        create("UIStroke", {
+            Color = isCurrentGame and COLORS.cyan or COLORS.divider,
+            Thickness = isCurrentGame and 1.5 or 1,
+            Transparency = isCurrentGame and 0.15 or 0.75,
+        }, gameCard)
+
+        -- Roblox Game Icon (rbxthumb with MarketplaceService Fallback)
+        local iconFrame = create("Frame", {
+            Position = UDim2.fromOffset(8, 8),
+            Size = UDim2.fromOffset(46, 46),
+            BackgroundColor3 = COLORS.surface,
+            BorderSizePixel = 0,
+        }, gameCard)
+        round(iconFrame, 8)
+
+        local fallbackGamepad = lucideIcon(iconFrame, "gamepad", UDim2.fromOffset(13, 13), UDim2.fromOffset(20, 20), COLORS.cyan, 1)
+
+        if isCurrentGame then
+            pcall(function()
+                local iconImg = create("ImageLabel", {
+                    Size = UDim2.fromScale(1, 1),
+                    BackgroundTransparency = 1,
+                    Image = "rbxthumb://type=GameIcon&id=" .. tostring(gameData.IconId) .. "&w=150&h=150",
+                    ScaleType = Enum.ScaleType.Crop,
+                    ZIndex = 2,
+                }, iconFrame)
+                round(iconImg, 8)
+            end)
+        end
+
+        -- Game Details
+        textLabel(gameCard, gameData.Name, UDim2.fromOffset(62, 8), UDim2.new(1, -120, 0, 18), Enum.Font.GothamBold, 11, COLORS.text)
+        textLabel(gameCard, gameData.Keywords, UDim2.fromOffset(62, 26), UDim2.new(1, -120, 0, 14), Enum.Font.GothamMedium, 9, COLORS.textFaint)
+
+        if isCurrentGame then
+            textLabel(gameCard, "🟢 ACTIVE NOW", UDim2.fromOffset(62, 42), UDim2.new(1, -120, 0, 12), Enum.Font.GothamBold, 8, COLORS.success)
+        end
+
+        -- Type Badge (FREE / VVIP)
+        local badge = create("Frame", {
+            Position = UDim2.new(1, -50, 0, 8),
+            Size = UDim2.fromOffset(42, 18),
+            BackgroundColor3 = gameData.Type == "VVIP" and COLORS.primary or COLORS.surfaceRaised,
+            BorderSizePixel = 0,
+        }, gameCard)
+        round(badge, 6)
+
+        textLabel(badge, gameData.Type, UDim2.fromScale(0, 0), UDim2.fromScale(1, 1), Enum.Font.GothamBold, 8, gameData.Type == "VVIP" and COLORS.text or COLORS.success, Enum.TextXAlignment.Center)
+
+        -- 🎮 เล่น button
+        local playBtn = Instance.new("TextButton")
+        playBtn.Size = UDim2.fromOffset(46, 22)
+        playBtn.Position = UDim2.new(1, -56, 1, -30)
+        playBtn.BackgroundColor3 = Color3.fromRGB(255, 45, 85)
+        playBtn.Text = "🎮 เล่น"
+        playBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        playBtn.Font = Enum.Font.GothamBold
+        playBtn.TextSize = 9
+        playBtn.BorderSizePixel = 0
+        playBtn.ZIndex = 5
+        playBtn.Parent = gameCard
+        local playBtnC = Instance.new("UICorner")
+        playBtnC.CornerRadius = UDim.new(0, 5)
+        playBtnC.Parent = playBtn
+        playBtn.MouseEnter:Connect(function()
+            TweenService:Create(playBtn, TweenInfo.new(0.15), { BackgroundColor3 = COLORS.primaryHover }):Play()
+        end)
+        playBtn.MouseLeave:Connect(function()
+            TweenService:Create(playBtn, TweenInfo.new(0.15), { BackgroundColor3 = Color3.fromRGB(255, 45, 85) }):Play()
+        end)
+        playBtn.MouseButton1Click:Connect(function()
+            -- Safe: copy PlaceId instead of teleporting
+            ShowHopConfirmPopup(gameData)
+        end)
+    end
+
+    -- Right Panel Header
+    local header = create("Frame", {
+        Name = "Header",
+        Size = UDim2.new(1, 0, 0, 62),
+        BackgroundTransparency = 1,
+        Active = true,
+    }, mainPanel)
+    local mainTitle = textLabel(header, "PAYOMBØYZ HUB", UDim2.fromOffset(22, 4), UDim2.fromOffset(235, 34), Enum.Font.Fondamento, 26, Color3.fromRGB(255, 35, 60))
+    create("UIStroke", {
+        Color = Color3.fromRGB(80, 0, 15),
+        Thickness = 1.8,
+    }, mainTitle)
+
+    local vvipTag = create("Frame", {
+        Name = "TitleVvipTag",
+        Position = UDim2.fromOffset(262, 11),
+        Size = UDim2.fromOffset(92, 20),
+        BackgroundColor3 = COLORS.surfaceRaised,
+        BorderSizePixel = 0,
+    }, header)
+    round(vvipTag, 6)
+    create("UIStroke", {
+        Color = COLORS.primary,
+        Thickness = 1.2,
+    }, vvipTag)
+    textLabel(vvipTag, "⚡ CRIMSON V4", UDim2.fromScale(0, 0), UDim2.fromScale(1, 1), Enum.Font.GothamBold, 9, COLORS.primary, Enum.TextXAlignment.Center)
+
+    textLabel(header, "⚡ HIGH-VOLTAGE EXECUTION ENGINE • VVIP EDITION", UDim2.fromOffset(23, 38), UDim2.fromOffset(360, 16), Enum.Font.GothamBold, 9, COLORS.cyan)
+
+    local minimize = makeIconButton(
+        header,
+        "Minimize",
+        "minus",
+        UDim2.new(1, -82, 0, 14),
+        COLORS.surfaceRaised,
+        COLORS.surfaceHover,
+        COLORS.surfacePressed
+    )
+    local close = makeIconButton(
+        header,
+        "Close",
+        "x",
+        UDim2.new(1, -44, 0, 14),
+        COLORS.surfaceRaised,
+        Color3.fromRGB(74, 38, 53),
+        Color3.fromRGB(54, 27, 40)
+    )
+    create("Frame", {
+        Position = UDim2.fromOffset(20, 61),
+        Size = UDim2.new(1, -40, 0, 1),
+        BackgroundColor3 = COLORS.divider,
+        BackgroundTransparency = 0.74,
+        BorderSizePixel = 0,
+    }, header)
+
+    -- Service Banner Card
+    local serviceCard = create("Frame", {
+        Name = "ServiceCard",
+        Position = UDim2.fromOffset(20, 74),
+        Size = UDim2.new(1, -40, 0, 88),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+    }, mainPanel)
+    local serviceLogoSlot = create("Frame", {
+        Name = "ServiceLogoSlot",
+        Position = UDim2.fromOffset(0, 2),
+        Size = UDim2.fromOffset(116, 82),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+    }, serviceCard)
+    local logo = create("ImageLabel", {
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.fromScale(0.5, 0.5),
+        Size = UDim2.fromOffset(80, 80),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ScaleType = Enum.ScaleType.Fit,
+    }, serviceLogoSlot)
+    round(logo, 40)
+    LoadCustomLogo(logo)
+
+    textLabel(serviceCard, "ACTIVE SERVICE", UDim2.fromOffset(128, 11), UDim2.new(1, -318, 0, 17), Enum.Font.GothamBold, 9, COLORS.success)
+    textLabel(serviceCard, "PayomboyZ Studios", UDim2.fromOffset(128, 29), UDim2.new(1, -318, 0, 24), Enum.Font.GothamBold, 15, COLORS.text)
+    textLabel(serviceCard, "Verified client delivery", UDim2.fromOffset(128, 54), UDim2.new(1, -318, 0, 18), Enum.Font.Gotham, 10, COLORS.textFaint)
+    local secureBadge = create("Frame", {
+        Position = UDim2.new(1, -180, 0.5, -17),
+        Size = UDim2.fromOffset(168, 34),
+        BackgroundColor3 = COLORS.glassDeep,
+        BackgroundTransparency = 0.18,
+        BorderSizePixel = 0,
+    }, serviceCard)
+    round(secureBadge, 9)
+    create("UIStroke", {
+        Color = COLORS.cyan,
+        Thickness = 1,
+        Transparency = 0.3,
+    }, secureBadge)
+    lucideIcon(secureBadge, "shield-check", UDim2.fromOffset(10, 9), UDim2.fromOffset(16, 16), COLORS.success, 5)
+    textLabel(secureBadge, "Security By Luarmour", UDim2.fromOffset(32, 0), UDim2.new(1, -36, 1, 0), Enum.Font.GothamBold, 9, COLORS.success)
+
+    textLabel(mainPanel, "SECURE ACCESS", UDim2.fromOffset(22, 174), UDim2.new(1, -44, 0, 16), Enum.Font.GothamBold, 9, COLORS.cyan)
+    textLabel(mainPanel, "Enter your key to launch PAYOMBØYZ HUB", UDim2.fromOffset(22, 190), UDim2.new(1, -44, 0, 19), Enum.Font.Gotham, 11, COLORS.textMuted)
+
+    -- Key Input
+    local input = create("TextBox", {
+        Name = "KeyInput",
+        Position = UDim2.fromOffset(20, 214),
+        Size = UDim2.new(1, -40, 0, 50),
+        BackgroundColor3 = COLORS.input,
+        BackgroundTransparency = 0.24,
+        BorderSizePixel = 0,
+        ClearTextOnFocus = false,
+        Font = Enum.Font.GothamMedium,
+        PlaceholderText = "Paste your key here...",
+        PlaceholderColor3 = COLORS.textMuted,
+        Text = defaultKeyText or "",
+        TextColor3 = COLORS.text,
+        TextTransparency = 0,
+        TextSize = 13,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 4,
+    }, mainPanel)
+    round(input, 12)
+    local inputFocused = false
+    local inputBorder = create("UIStroke", {
+        Name = "KeyInputBorder",
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+        Color = COLORS.cyan,
+        Thickness = 1.35,
+        Transparency = 0.18,
+    }, input)
+    local inputBorderGradient = create("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(140, 20, 50)),
+            ColorSequenceKeypoint.new(0.44, Color3.fromRGB(255, 45, 85)),
+            ColorSequenceKeypoint.new(0.52, Color3.fromRGB(255, 120, 150)),
+            ColorSequenceKeypoint.new(0.60, Color3.fromRGB(255, 45, 85)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(140, 20, 50)),
+        }),
+        Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.58),
+            NumberSequenceKeypoint.new(0.40, 0.38),
+            NumberSequenceKeypoint.new(0.50, 0),
+            NumberSequenceKeypoint.new(0.62, 0.38),
+            NumberSequenceKeypoint.new(1, 0.58),
+        }),
+        Rotation = 0,
+    }, inputBorder)
+    local inputBorderSpin = TweenService:Create(
+        inputBorderGradient,
+        TweenInfo.new(2.65, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1),
+        { Rotation = 360 }
+    )
+    inputBorderSpin:Play()
+    gui.Destroying:Connect(function() inputBorderSpin:Cancel() end)
+    local inputKeyIcon = lucideIcon(mainPanel, "key", UDim2.fromOffset(36, 230), UDim2.fromOffset(18, 18), COLORS.textMuted, 5)
+    create("UIPadding", {
+        PaddingLeft = UDim.new(0, 46),
+        PaddingRight = UDim.new(0, 16),
+    }, input)
+
+    -- Primary Buttons Row
+    local primaryRow = create("Frame", {
+        Position = UDim2.fromOffset(20, 276),
+        Size = UDim2.new(1, -40, 0, 46),
+        BackgroundTransparency = 1,
+    }, mainPanel)
+    create("UIListLayout", {
+        FillDirection = Enum.FillDirection.Horizontal,
+        Padding = UDim.new(0, 10),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+    }, primaryRow)
+    local getKey = makeButton(primaryRow, "GetKey", "Get Key", UDim2.new(), UDim2.new(0.5, -5, 1, 0), COLORS.surfaceRaised, COLORS.surfaceHover, COLORS.surfacePressed, "key")
+    getKey.LayoutOrder = 1
+    local redeem = makeButton(primaryRow, "Redeem", "⚡ Verify Key", UDim2.new(), UDim2.new(0.5, -5, 1, 0), COLORS.primary, COLORS.primaryHover, COLORS.primaryPressed, "shield-check")
+    redeem.LayoutOrder = 2
+    create("UIStroke", {
+        Color = Color3.fromRGB(255, 55, 90),
+        Thickness = 1.4,
+        Transparency = 0.2,
+    }, redeem)
+
+    -- Utility Buttons Row
+    local utilityRow = create("Frame", {
+        Position = UDim2.fromOffset(20, 334),
+        Size = UDim2.new(1, -40, 0, 38),
+        BackgroundTransparency = 1,
+    }, mainPanel)
+    create("UIListLayout", {
+        FillDirection = Enum.FillDirection.Horizontal,
+        Padding = UDim.new(0, 8),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+    }, utilityRow)
+    local discord = makeButton(utilityRow, "Discord", "Discord", UDim2.new(), UDim2.new(1 / 3, -6, 1, 0), COLORS.surfaceRaised, COLORS.surfaceHover, COLORS.surfacePressed, "message-circle")
+    discord.LayoutOrder = 1
+    local copyHwid = makeButton(utilityRow, "CopyHWID", "Copy HWID", UDim2.new(), UDim2.new(1 / 3, -6, 1, 0), COLORS.surfaceRaised, COLORS.surfaceHover, COLORS.surfacePressed, "copy")
+    copyHwid.LayoutOrder = 2
+    local settingsButton = makeButton(utilityRow, "Settings", "Settings", UDim2.new(), UDim2.new(1 / 3, -6, 1, 0), COLORS.surfaceRaised, COLORS.surfaceHover, COLORS.surfacePressed, "settings")
+    settingsButton.LayoutOrder = 3
+    setButtonTextSize(discord, 11)
+    setButtonTextSize(copyHwid, 11)
+    setButtonTextSize(settingsButton, 11)
+
+    -- Status Card
+    local statusCard = create("Frame", {
+        Name = "StatusCard",
+        Position = UDim2.fromOffset(20, 384),
+        Size = UDim2.new(1, -40, 0, 46),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ClipsDescendants = true,
+    }, mainPanel)
+    local statusAccent = create("Frame", {
+        Position = UDim2.fromOffset(0, 8),
+        Size = UDim2.new(0, 3, 1, -16),
+        BackgroundColor3 = COLORS.cyan,
+        BorderSizePixel = 0,
+    }, statusCard)
+    round(statusAccent, 2)
+    local statusIcon = lucideIcon(statusCard, "info", UDim2.fromOffset(16, 15), UDim2.fromOffset(16, 16), COLORS.cyan, 5)
+    local statusSummary = textLabel(statusCard, "", UDim2.fromOffset(42, 13), UDim2.new(1, -58, 0, 20), Enum.Font.GothamBold, 11, COLORS.textMuted)
+    statusSummary.Name = "StatusSummary"
+    local statusDetail = textLabel(statusCard, "", UDim2.fromOffset(42, 34), UDim2.new(1, -58, 0, 38), Enum.Font.Gotham, 9, COLORS.textMuted)
+    statusDetail.Name = "StatusDetail"
+    statusDetail.TextWrapped = true
+    statusDetail.TextTruncate = Enum.TextTruncate.None
+    statusDetail.TextYAlignment = Enum.TextYAlignment.Top
+    statusDetail.Visible = false
+    local copyError = makeButton(statusCard, "CopyError", "Copy Error", UDim2.new(1, -108, 0, 8), UDim2.fromOffset(94, 26), COLORS.surfaceRaised, COLORS.surfaceHover, COLORS.surfacePressed, "copy")
+    setButtonTextSize(copyError, 9)
+    copyError.Visible = false
+
+    -- Premium / VIP Card
+    local accessCard = create("Frame", {
+        Name = "PremiumAccess",
+        Position = UDim2.fromOffset(20, 442),
+        Size = UDim2.new(1, -40, 0, 146),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ClipsDescendants = true,
+    }, mainPanel)
+    create("Frame", {
+        Name = "PremiumDivider",
+        Position = UDim2.fromOffset(0, 0),
+        Size = UDim2.new(1, 0, 0, 1),
+        BackgroundColor3 = COLORS.divider,
+        BackgroundTransparency = 0.84,
+        BorderSizePixel = 0,
+    }, accessCard)
+    local premiumBadge = textLabel(accessCard, "PAYOMBOYZ VIP", UDim2.fromOffset(18, 14), UDim2.fromOffset(86, 18), Enum.Font.GothamBold, 8, COLORS.primary, Enum.TextXAlignment.Center)
+    premiumBadge.BackgroundTransparency = 0
+    premiumBadge.BackgroundColor3 = COLORS.surfaceRaised
+    round(premiumBadge, 6)
+    textLabel(accessCard, "VVIP Exclusive Access", UDim2.fromOffset(18, 40), UDim2.new(1, -170, 0, 22), Enum.Font.GothamBold, 15, COLORS.text)
+    textLabel(accessCard, "Unlock Mine a Mountain, MM2 & exclusive features", UDim2.fromOffset(18, 64), UDim2.new(1, -170, 0, 19), Enum.Font.GothamMedium, 11, COLORS.textMuted)
+    textLabel(accessCard, "Join Discord to Upgrade to VVIP", UDim2.fromOffset(18, 87), UDim2.new(1, -170, 0, 18), Enum.Font.GothamMedium, 10, COLORS.premium)
+    local premiumPerks = textLabel(accessCard, "VVIP Maps  |  Priority Support  |  Auto Farm Engine", UDim2.fromOffset(18, 111), UDim2.new(1, -170, 0, 19), Enum.Font.GothamMedium, 10, COLORS.textFaint)
+    local plansSlot = create("Frame", {
+        Name = "PlansSlot",
+        Position = UDim2.new(1, -136, 0.5, -20),
+        Size = UDim2.fromOffset(118, 40),
+        BackgroundTransparency = 1,
+    }, accessCard)
+    local premiumButton = makeButton(plansSlot, "PremiumPlans", "Get VVIP", UDim2.fromOffset(0, 0), UDim2.fromScale(1, 1), COLORS.premiumAction, COLORS.premiumHover, COLORS.premiumPressed, "external-link")
+    setButtonTextSize(premiumButton, 12)
+    local plansScale = create("UIScale", { Scale = 1 }, plansSlot)
+    local plansMotionStartedAt = os.clock()
+    local plansMotionConnection
+    local viewportConn = nil
+    if deviceName() ~= "Mobile" then
+        plansMotionConnection = RunService.RenderStepped:Connect(function()
+            if not gui.Parent or not premiumButton.Parent then return end
+            if shell and not shell.Visible then return end
+            local phase = os.clock() - plansMotionStartedAt
+            premiumButton.Position = UDim2.fromOffset(
+                math.cos(phase * 0.90) * 2.0,
+                math.sin(phase * 1.10) * 3.0
+            )
+            premiumButton.Rotation = math.sin(phase * 0.74 + 0.55) * 0.65
+            plansScale.Scale = 1 + math.sin(phase * 0.62 + 1.20) * 0.012
+        end)
+    end
+    gui.Destroying:Connect(function()
+        if plansMotionConnection then plansMotionConnection:Disconnect() end
+    end)
+
+    local lastErrorDetail = ""
+    local function setStatusLayout(hasDetail, tone)
+        local statusHeight = hasDetail and 82 or 46
+        local accessY = hasDetail and 478 or 442
+        local accessHeight = hasDetail and 110 or 146
+        if hasDetail then
+            statusDetail.Visible = true
+            copyError.Visible = true
+        else
+            statusDetail.Visible = false
+            copyError.Visible = false
+        end
+        premiumPerks.Visible = not hasDetail
+        playTween(statusCard, MOTION.normal, { Size = UDim2.new(1, -40, 0, statusHeight) })
+        playTween(accessCard, MOTION.normal, {
+            Position = UDim2.fromOffset(20, accessY),
+            Size = UDim2.new(1, -40, 0, accessHeight),
+        })
+        playTween(statusSummary, MOTION.quick, {
+            Position = UDim2.fromOffset(42, hasDetail and 8 or 13),
+            Size = UDim2.new(1, hasDetail and -160 or -58, 0, 20),
+            TextColor3 = tone,
+        })
+        playTween(statusIcon, MOTION.quick, { Position = UDim2.fromOffset(16, hasDetail and 10 or 15) })
+        statusSummary.TextXAlignment = Enum.TextXAlignment.Left
+    end
+
+    local function setStatus(message, color, detail)
+        local tone = color or COLORS.textMuted
+        local safeDetail = tostring(detail or ""):gsub("[%c]+", " "):gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", "")
+        local hasDetail = safeDetail ~= ""
+        statusSummary.Text = tostring(message or "")
+        local iconName = "info"
+        if tone == COLORS.success then
+            iconName = "check-circle"
+        elseif tone == COLORS.warning or tone == COLORS.danger then
+            iconName = "alert-circle"
+        end
+        applyLucideData(statusIcon, iconName)
+        playTween(statusIcon, MOTION.quick, { ImageColor3 = tone })
+        playTween(statusAccent, MOTION.quick, { BackgroundColor3 = tone })
+        setStatusLayout(hasDetail, tone)
+        lastErrorDetail = safeDetail
+        if hasDetail then
+            statusDetail.Text = #safeDetail > 190 and (safeDetail:sub(1, 187) .. "...") or safeDetail
+            warn("[PayomboyZ Hub] " .. tostring(message or "Error") .. " " .. safeDetail)
+        else
+            statusDetail.Text = ""
+        end
+    end
+
+    local isXeno = isXenoExecutor()
+    local placeId = game.PlaceId
+    local gameData = SupportedGames[placeId]
+    if isXeno and gameData and gameData.NoXeno then
+        setStatus("⚠️ ตัวรัน Xeno ไม่รองรับในแมพ " .. (gameData.Name or "Game"), COLORS.warning)
+    elseif initialStatus then
+        setStatus(initialStatus, COLORS.warning)
+    else
+        setStatus("Ready for " .. detectedGame .. ".", COLORS.cyan)
+    end
+
+    -- ==============================================================================
+    -- 🚀 ExecuteFlowAuth — ทำลาย UI แล้ว Execute พร้อม Retry UI ถ้าล้มเหลว
+    -- ==============================================================================
+    local function ExecuteFlowAuth(targetUrl, userKey)
+        -- Snapshot references ก่อน destroy เพื่อป้องกัน nil access หลัง GUI ถูกทำลาย
+        local _gui = gui
+        local _conns = trackedConnections
+        local _threads = trackedThreads
+        local _plansConn = plansMotionConnection
+        local _viewConn = viewportConn
+
+        -- ปิด Connection ทั้งหมดก่อน destroy
+        pcall(function()
+            if _plansConn then _plansConn:Disconnect() end
+            if _viewConn then _viewConn:Disconnect() end
+            for _, conn in ipairs(_conns) do
+                pcall(function() conn:Disconnect() end)
+            end
+            for _, th in ipairs(_threads) do
+                pcall(task.cancel, th)
+            end
+        end)
+
+        -- ทำลาย UI อย่างปลอดภัย
+        pcall(function()
+            if _gui and _gui.Parent then
+                _gui:Destroy()
+            end
+            _ENV.__PAYOMBOYZ_CURRENT_GUI = nil
+        end)
+
+        -- รัน FlowAuth ใน deferred thread
+        task.defer(function()
+            task.wait(0.15)
+            RunFlowAuthWithRetry(targetUrl, userKey, 3, function(errMsg)
+                _isAuthenticating = false
+                _isScriptLaunched = false
+                task.spawn(function()
+                    task.wait(0.2)
+                    if getgenv then
+                        getgenv().PayomboyZ_ShowUI = true
+                        getgenv().PayomboyZ_ErrorMsg = L("retryFailed")
+                    end
+                    CreateLoaderUI(L("retryFailed"), userKey)
+                end)
+            end)
+        end)
+    end
+
+    local function redeemKey()
+        if _isAuthenticating or _isScriptLaunched then
+            warn("[PAYOMBØYZ HUB] Auth or script launch already in progress, skipping click.")
+            return
+        end
+
+        local placeId = game.PlaceId
+        local gameData = SupportedGames[placeId]
+        local mapName = gameData and gameData.Name or "Waiting Hub"
+        local isVVIPMap = gameData and gameData.IsVVIP or false
+
+        -- ตรวจสอบตัวรัน Xeno เฉพาะในแมพที่ไม่รองรับ
+        if isXenoExecutor() and gameData and gameData.NoXeno then
+            setStatus("❌ ตัวรัน Xeno ไม่รองรับในแมพ " .. mapName .. " กรุณาใช้ตัวรันอื่น", COLORS.danger)
+            return
+        end
+
+        local rawKey = input.Text or ""
+        local key = rawKey:gsub("%s+", "")
+        if key == "" then
+            setStatus("⚠️ กรุณากรอก Key ก่อนเข้าใช้งาน", COLORS.warning)
+            return
+        end
+
+        _isAuthenticating = true
+        setButtonEnabled(redeem, false)
+
+        task.spawn(function()
+            -- 1. ตรวจสอบแมพที่กำลังเล่น
+            local targetUrl = gameData and gameData.URL or "https://raw.githubusercontent.com/Payomboyz0028/Yaranikaaaa/refs/heads/main/WaitKey"
+
+            -- 2. ตรวจสอบสิทธิ์ SuperVIP / VVIP / Luarmor
+            local isSuperVIP = IsSuperVIPKey(key)
+            local isVVIP = IsVVIPKey(key)
+            local isAuthed = false
+            local luarmorReason = nil
+
+            if isSuperVIP then
+                setStatus(L("superVIPOk"), COLORS.cyan)
+                isAuthed = true
+                task.wait(0.15)
+            else
+                setStatus(L("verifying"), COLORS.cyan)
+                isAuthed, luarmorReason = VerifyKeyWithLuarmorAPI(key)
+            end
+
+            -- 3. ตรวจสอบว่าคีย์ผ่านไหม
+            if isAuthed then
+                local engine = GetRemoteKeyData()
+                local resolvedUrl = nil
+                if engine and type(engine.GetGameURL) == "function" then
+                    resolvedUrl = engine.GetGameURL(game.PlaceId, key)
+                end
+
+                if resolvedUrl then
+                    targetUrl = resolvedUrl
+                else
+                    if isVVIPMap and not isVVIP then
+                        setStatus(L("vvipMapWarn"), COLORS.warning)
+                        targetUrl = "https://raw.githubusercontent.com/Payomboyz0028/Yaranikaaaa/refs/heads/main/WaitKey"
+                        task.wait(0.8)
+                    end
+                end
+
+                SaveKey(key)
+
+                if isSuperVIP then
+                    setStatus(L("superVIPSuccess") .. mapName, COLORS.success)
+                elseif isVVIP then
+                    setStatus(L("vvipSuccess") .. mapName, COLORS.success)
+                else
+                    setStatus(L("authSuccess") .. mapName, COLORS.success)
+                end
+                task.wait(0.25)
+
+                ExecuteFlowAuth(targetUrl, key)
+            else
+                _isAuthenticating = false
+                setStatus(luarmorReason or L("keyBad"), COLORS.danger)
+                setButtonEnabled(redeem, true)
+            end
+        end)
+    end
+
+    copyError.Activated:Connect(function()
+        if lastErrorDetail ~= "" and copyText(lastErrorDetail) then
+            setButtonText(copyError, "Copied")
+            task.delay(1.2, function()
+                if copyError.Parent then setButtonText(copyError, "Copy Error") end
+            end)
+        end
+    end)
+
+    getKey.Activated:Connect(function()
+        if copyText(LuarmorConfig.GetKeyURL) then
+            setStatus(L("copiedKey"), COLORS.success)
+        else
+            setStatus(LuarmorConfig.GetKeyURL, COLORS.warning)
+        end
+    end)
+
+    discord.Activated:Connect(function()
+        if copyText(LuarmorConfig.DiscordURL) then
+            setStatus(L("copiedDiscord"), COLORS.success)
+        else
+            setStatus(LuarmorConfig.DiscordURL, COLORS.warning)
+        end
+    end)
+
+    copyHwid.Activated:Connect(function()
+        local hwid = readableHwid()
+        if hwid and copyText(hwid) then
+            setStatus(L("copiedHwid"), COLORS.success)
+        else
+            setStatus("HWID: Secured (SuperVIP Mode)", COLORS.success)
+        end
+    end)
+
+    premiumButton.Activated:Connect(function()
+        local vvipUrl = LuarmorConfig.VVIPURL or "https://payomboyz.rexzy.xyz/"
+        if copyText(vvipUrl) then
+            setStatus(L("copiedVvip"), COLORS.success)
+        else
+            setStatus(vvipUrl, COLORS.warning)
+        end
+    end)
+
+    -- 🌐 Language Toggle Button — สลับ TH / EN
+    pcall(function()
+        local langBtnParent = header
+        if langBtnParent then
+            local langBtn = makeButton(
+                langBtnParent, "LangToggle",
+                L("langBtn"),
+                UDim2.new(1, -120, 0.5, -14),
+                UDim2.fromOffset(44, 28),
+                COLORS.secondary, COLORS.secondaryHover, COLORS.secondaryPressed
+            )
+            langBtn.ZIndex = 8
+            langBtn.Activated:Connect(function()
+                _currentLang = (_currentLang == "TH") and "EN" or "TH"
+                setButtonText(langBtn, L("langBtn"))
+                setStatus("Language: " .. _currentLang, COLORS.cyan)
+                -- อัปเดตปุ่มหลัก
+                pcall(function()
+                    setButtonText(redeem, L("redeemBtn"))
+                    setButtonText(getKey, L("getKeyBtn"))
+                    setButtonText(discord, L("discordBtn"))
+                    setButtonText(copyHwid, L("copyHwidBtn"))
+                    setButtonText(premiumButton, L("premiumBtn"))
+                    if input.Text == "" then
+                        input.PlaceholderText = L("inputPlaceholder")
+                    end
+                end)
+            end)
+        end
+    end)
+
+    input.Focused:Connect(function()
+        inputFocused = true
+        playTween(input, MOTION.quick, { BackgroundColor3 = COLORS.inputFocus })
+        playTween(inputBorder, MOTION.quick, { Transparency = 0.06 })
+        playTween(inputKeyIcon, MOTION.quick, { ImageColor3 = COLORS.cyan })
+    end)
+
+    input.FocusLost:Connect(function()
+        inputFocused = false
+        playTween(input, MOTION.quick, { BackgroundColor3 = COLORS.input })
+        playTween(inputBorder, MOTION.quick, { Transparency = 0.18 })
+        playTween(inputKeyIcon, MOTION.quick, { ImageColor3 = COLORS.textFaint })
+    end)
+
+    local waitingKeyStates = {
+        "Waiting for key",
+        "Waiting for key.",
+        "Waiting for key..",
+        "Waiting for key...",
+    }
+    local placeholderThread = task.spawn(function()
+        local waitingIndex = 1
+        while gui and gui.Parent do
+            if input and input.Parent and input.Text == "" and not inputFocused then
+                input.PlaceholderText = waitingKeyStates[waitingIndex]
+                waitingIndex = waitingIndex % #waitingKeyStates + 1
+            end
+            task.wait(0.45)
+        end
+    end)
+    table.insert(trackedThreads, placeholderThread)
+
+    local detailsVisible = true
+    local requestedDetails = true
+    local viewportCompact = false
+    local detailsTransitioning = false
+    local detailsTransitionVersion = 0
+    local updateResponsiveScale
+    local currentCompactView = "main"
+
+    local function showCompactView(viewName)
+        currentCompactView = viewName
+        playClickSound()
+        pcall(function()
+            strikeLightning(lightningLayer, 5)
+        end)
+        if viewName == "profile" or viewName == "games" then
+            mainPanel.Visible = false
+            userPanel.Size = UDim2.fromOffset(628, 604)
+            userPanel.Position = UDim2.fromOffset(8, 8)
+            userPanel.Visible = true
+            columnDivider.Visible = false
+            if backToKeyBtn then backToKeyBtn.Visible = true end
+            if closeInUserBtn then closeInUserBtn.Visible = true end
+            switchLeftTab(viewName == "games" and "games" or "user")
+        else
+            userPanel.Visible = false
+            mainPanel.Position = UDim2.fromOffset(8, 8)
+            mainPanel.Visible = true
+            columnDivider.Visible = false
+        end
+    end
+
+    if backToKeyBtn then
+        backToKeyBtn.Activated:Connect(function()
+            showCompactView("main")
+        end)
+    end
+
+    local function setDetailsVisible(visible, announce)
+        if viewportCompact then
+            detailsVisible = false
+            userPanel.Size = UDim2.fromOffset(628, 604)
+            columnDivider.Visible = false
+            if currentCompactView == "main" then
+                userPanel.Visible = false
+                mainPanel.Position = UDim2.fromOffset(8, 8)
+                mainPanel.Visible = true
+            else
+                mainPanel.Visible = false
+                userPanel.Position = UDim2.fromOffset(8, 8)
+                userPanel.Visible = true
+                if backToKeyBtn then backToKeyBtn.Visible = true end
+                if closeInUserBtn then closeInUserBtn.Visible = true end
+            end
+            setButtonText(settingsButton, "🎮 แมพ & ข้อมูล")
+            setButtonTextSize(settingsButton, 10)
+            if updateResponsiveScale then
+                task.defer(updateResponsiveScale)
+            end
+            return
+        end
+
+        -- Desktop dual-column mode
+        setButtonText(settingsButton, "Settings")
+        setButtonTextSize(settingsButton, 11)
+        if backToKeyBtn then backToKeyBtn.Visible = false end
+        if closeInUserBtn then closeInUserBtn.Visible = false end
+
+        if visible == detailsVisible and not detailsTransitioning then
+            return
+        end
+
+        detailsTransitionVersion = detailsTransitionVersion + 1
+        local transitionVersion = detailsTransitionVersion
+        detailsTransitioning = true
+        detailsVisible = visible
+
+        columnDivider.Visible = true
+        if visible then
+            userPanel.Size = UDim2.fromOffset(278, 604)
+            userPanel.Visible = true
+            userPanel.Position = UDim2.fromOffset(-286, 8)
+            columnDivider.BackgroundTransparency = 1
+            playTween(shell, MOTION.slow, {
+                Size = UDim2.fromOffset(DESKTOP_WIDTH, SHELL_HEIGHT),
+            }, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut, "layout")
+            playTween(mainPanel, MOTION.slow, {
+                Position = UDim2.fromOffset(294, 8),
+            }, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut, "details")
+            playTween(columnDivider, MOTION.slow, {
+                BackgroundTransparency = 0.84,
+            }, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut, "details")
+            local profileTween = playTween(userPanel, MOTION.slow, {
+                Position = UDim2.fromOffset(8, 8),
+            }, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut, "details")
+            profileTween.Completed:Connect(function()
+                if transitionVersion == detailsTransitionVersion then
+                    detailsTransitioning = false
+                end
+            end)
+        else
+            playTween(shell, MOTION.slow, {
+                Size = UDim2.fromOffset(COMPACT_WIDTH, SHELL_HEIGHT),
+            }, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut, "layout")
+            playTween(mainPanel, MOTION.slow, {
+                Position = UDim2.fromOffset(8, 8),
+            }, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut, "details")
+            playTween(columnDivider, MOTION.slow, {
+                BackgroundTransparency = 1,
+            }, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut, "details")
+            local profileTween = playTween(userPanel, MOTION.slow, {
+                Position = UDim2.fromOffset(-286, 8),
+            }, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut, "details")
+            profileTween.Completed:Connect(function()
+                if gui.Parent and transitionVersion == detailsTransitionVersion and not detailsVisible then
+                    userPanel.Visible = false
+                    columnDivider.Visible = false
+                    detailsTransitioning = false
+                end
+            end)
+        end
+        if announce then
+            setStatus(visible and "Profile details shown." or "Compact mode enabled.", COLORS.textMuted)
+        end
+        if updateResponsiveScale then
+            task.defer(updateResponsiveScale)
+        end
+    end
+
+    settingsButton.Activated:Connect(function()
+        if detailsTransitioning then return end
+        if viewportCompact then
+            if currentCompactView == "main" then
+                showCompactView("games")
+            else
+                showCompactView("main")
+            end
+            return
+        end
+        requestedDetails = not requestedDetails
+        setDetailsVisible(requestedDetails, true)
+    end)
+
+    minimize.Activated:Connect(function()
+        if detailsTransitioning then return end
+        if viewportCompact then
+            shell.Visible = false
+            return
+        end
+        requestedDetails = false
+        setDetailsVisible(false, true)
+    end)
+
+    local closing = false
+    local function closeLoader()
+        if closing then return end
+        closing = true
+        playTween(backdrop, MOTION.normal, { BackgroundTransparency = 1 })
+        playTween(shellScale, MOTION.normal, { Scale = shellScale.Scale * 0.96 })
+        local tween = playTween(shell, MOTION.normal, { GroupTransparency = 1 }, nil, nil, "visibility")
+        tween.Completed:Connect(function()
+            if gui.Parent then gui:Destroy() end
+        end)
+    end
+
+    close.Activated:Connect(closeLoader)
+    if closeInUserBtn then
+        closeInUserBtn.Activated:Connect(closeLoader)
+    end
+    redeem.Activated:Connect(redeemKey)
+    input.FocusLost:Connect(function(enterPressed)
+        if enterPressed then redeemKey() end
+    end)
+
+    -- Setup initial Intro Overlay state & Morph Expansion according to Intro.md
+    local introOverlay = create("Frame", {
+        Name = "IntroOverlay",
+        Size = UDim2.fromScale(1, 1),
+        BackgroundTransparency = 1,
+        ZIndex = 999,
+    }, shell)
+
+    local introLogo = create("ImageLabel", {
+        Name = "IntroLogo",
+        Size = UDim2.fromOffset(115, 115),
+        Position = UDim2.new(0, 24, 0.5, -57.5),
+        BackgroundTransparency = 1,
+        Image = loadIntroLogoImage(),
+        ImageTransparency = 1,
+        ZIndex = 1000,
+    }, introOverlay)
+
+    local introTitle = create("TextLabel", {
+        Name = "IntroTitle",
+        Size = UDim2.new(1, -160, 0, 36),
+        Position = UDim2.new(0, 150, 0.5, -26),
+        BackgroundTransparency = 1,
+        Text = LuarmorConfig.HubName or "PAYOMBØYZ Script HUB",
+        TextColor3 = Color3.fromRGB(255, 35, 60),
+        Font = Enum.Font.Fondamento,
+        TextSize = 28,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextTransparency = 1,
+        ZIndex = 1000,
+    }, introOverlay)
+
+    create("UIStroke", {
+        Color = Color3.fromRGB(80, 0, 15),
+        Thickness = 1.8,
+    }, introTitle)
+
+    local introSub = create("TextLabel", {
+        Name = "IntroSub",
+        Size = UDim2.new(1, -160, 0, 18),
+        Position = UDim2.new(0, 150, 0.5, 14),
+        BackgroundTransparency = 1,
+        Text = "LOADING OBSIDIAN V2 ENGINE...",
+        TextColor3 = Color3.fromRGB(240, 240, 245),
+        Font = Enum.Font.GothamBold,
+        TextSize = 11,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextTransparency = 1,
+        ZIndex = 1000,
+    }, introOverlay)
+
+    -- Configure Shell initial intro state (520x150 White Transparent Glass)
+    shell.Size = UDim2.fromOffset(520, 150)
+    shellChrome.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    shellChrome.BackgroundTransparency = 0.92
+    shellStroke.Color = Color3.fromRGB(255, 255, 255)
+    shellStroke.Transparency = 0.4
+    userPanel.Visible = false
+    mainPanel.Visible = false
+    columnDivider.Visible = false
+
+    local startedAt = os.clock()
+    local sessionThread = task.spawn(function()
+        while gui and gui.Parent do
+            local elapsed = math.floor(os.clock() - startedAt)
+            if sessionText and sessionText.Parent then
+                sessionText.Text = string.format("%02d:%02d", math.floor(elapsed / 60), elapsed % 60)
+            end
+            if pingText and pingText.Parent then
+                pingText.Text = "60 FPS"
+            end
+            task.wait(1)
+        end
+    end)
+    table.insert(trackedThreads, sessionThread)
+
+    local dragging = false
+    local dragStart
+    local shellStart
+    local function onDragStart(inputObject)
+        if inputObject.UserInputType == Enum.UserInputType.MouseButton1 or inputObject.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = inputObject.Position
+            shellStart = shell.Position
+        end
+    end
+    header.InputBegan:Connect(onDragStart)
+    if userPanelDrag then userPanelDrag.InputBegan:Connect(onDragStart) end
+
+    local dragEndedConn = UserInputService.InputEnded:Connect(function(inputObject)
+        if inputObject.UserInputType == Enum.UserInputType.MouseButton1 or inputObject.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+    local dragChangedConn = UserInputService.InputChanged:Connect(function(inputObject)
+        if dragging and (inputObject.UserInputType == Enum.UserInputType.MouseMovement or inputObject.UserInputType == Enum.UserInputType.Touch) then
+            local currentScale = (shellScale and shellScale.Scale > 0) and shellScale.Scale or 1
+            local delta = (inputObject.Position - dragStart) / currentScale
+            shell.Position = UDim2.new(
+                shellStart.X.Scale,
+                shellStart.X.Offset + delta.X,
+                shellStart.Y.Scale,
+                shellStart.Y.Offset + delta.Y
+            )
+        end
+    end)
+
+    local entered = false
+    local responsiveScale = 1
+    updateResponsiveScale = function()
+        local camera = workspace.CurrentCamera
+        local viewport = camera and camera.ViewportSize or Vector2.new(1280, 720)
+        if not viewport or viewport.X < 100 or viewport.Y < 100 then
+            viewport = Vector2.new(800, 450)
+        end
+        local isCompact = viewportCompact or not detailsVisible
+        local targetWidth = isCompact and COMPACT_WIDTH or DESKTOP_WIDTH
+
+        local availX = math.max(60, viewport.X - 32)
+        local availY = math.max(60, viewport.Y - 32)
+
+        local scaleX = availX / targetWidth
+        local scaleY = availY / SHELL_HEIGHT
+
+        responsiveScale = math.clamp(math.min(scaleX, scaleY, 1), 0.20, 1)
+
+        if entered then
+            playTween(shellScale, MOTION.normal, { Scale = responsiveScale })
+        else
+            shellScale.Scale = responsiveScale * 0.96
+        end
+    end
+
+    local function applyResponsiveLayout()
+        local camera = workspace.CurrentCamera
+        local viewport = camera and camera.ViewportSize or Vector2.new(1280, 720)
+        local isMobile = (deviceName() == "Mobile")
+        viewportCompact = isMobile or (viewport.X < 860)
+        setDetailsVisible(requestedDetails and not viewportCompact, false)
+        updateResponsiveScale()
+    end
+
+    applyResponsiveLayout()
+    viewportConn = nil
+    pcall(function()
+        viewportConn = workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(applyResponsiveLayout)
+    end)
+
+    gui.Destroying:Connect(function()
+        pcall(function()
+            if dragEndedConn then dragEndedConn:Disconnect() end
+            if dragChangedConn then dragChangedConn:Disconnect() end
+            if viewportConn then viewportConn:Disconnect() end
+            if plansMotionConnection then plansMotionConnection:Disconnect() end
+            for _, conn in ipairs(trackedConnections) do
+                pcall(function() conn:Disconnect() end)
+            end
+            for _, th in ipairs(trackedThreads) do
+                pcall(task.cancel, th)
+            end
+        end)
+    end)
+
+    -- Intro Animation Blueprint from Intro.md
+    task.spawn(function()
+        if not gui.Parent then return end
+        entered = true
+        playTween(backdrop, MOTION.slow, { BackgroundTransparency = 0.78 })
+        playTween(shell, MOTION.slow, { GroupTransparency = 0 }, nil, nil, "visibility")
+        playTween(shellScale, MOTION.slow, { Scale = responsiveScale })
+
+        -- Phase 1: Fade-In Logo & Gothic Title (0.45s)
+        playTween(introLogo, 0.45, { ImageTransparency = 0 }, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        playTween(introTitle, 0.45, { TextTransparency = 0 }, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        playTween(introSub, 0.45, { TextTransparency = 0.2 }, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+
+        -- ⚡ STRIKE CRIMSON LIGHTNING ACROSS INTRO CARD
+        task.delay(0.18, function()
+            pcall(function()
+                strikeLightning(shellChrome, 6)
+            end)
+        end)
+
+        task.wait(1.5)
+
+        -- Phase 2: Fade-Out (0.30s)
+        playTween(introLogo, 0.30, { ImageTransparency = 1 }, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+        playTween(introTitle, 0.30, { TextTransparency = 1 }, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+        playTween(introSub, 0.30, { TextTransparency = 1 }, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+
+        task.wait(0.35)
+        introOverlay.Visible = false
+
+        -- Phase 3: Window Morph & Expand (0.65s) to target full UI size
+        local isCompact = viewportCompact or not detailsVisible
+        local targetWidth = isCompact and COMPACT_WIDTH or DESKTOP_WIDTH
+        playTween(shell, 0.65, { Size = UDim2.fromOffset(targetWidth, SHELL_HEIGHT) }, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
+        playTween(shellChrome, 0.65, { BackgroundColor3 = COLORS.shell, BackgroundTransparency = 0.12 }, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
+        playTween(shellStroke, 0.65, { Color = Color3.fromRGB(255, 25, 55), Transparency = 0.15 }, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
+
+        -- ⚡ HIGH-VOLTAGE MORPH LIGHTNING STRIKE
+        task.delay(0.25, function()
+            pcall(function()
+                strikeLightning(shellChrome, 8)
+            end)
+        end)
+
+        task.wait(0.65)
+
+        -- Phase 4: Reveal Content Panels
+        if isCompact then
+            userPanel.Visible = false
+            columnDivider.Visible = false
+            mainPanel.Position = UDim2.fromOffset(8, 8)
+            mainPanel.Visible = true
+        else
+            userPanel.Size = UDim2.fromOffset(278, 604)
+            userPanel.Position = UDim2.fromOffset(8, 8)
+            userPanel.Visible = true
+            columnDivider.Visible = true
+            mainPanel.Position = UDim2.fromOffset(294, 8)
+            mainPanel.Visible = true
+        end
+    end)
+end
+
+-- ==============================================================================
+-- 🚀 SMART AUTO-LOGIN FLOW
+-- ==============================================================================
+if getgenv and getgenv().PayomboyZ_LoggedOut then
+    getgenv().PayomboyZ_LoggedOut = nil
+    _isScriptLaunched = false
+    _isAuthenticating = false
+    ClearSavedKeys()
+    local passedKey = GetPassedScriptKey()
+    CreateLoaderUI("✅ ออกจากระบบเรียบร้อยแล้ว กรุณากรอกคีย์ใหม่", passedKey)
+    return
+end
+
+if getgenv and getgenv().PayomboyZ_ShowUI then
+    local passedKey = GetPassedScriptKey()
+    _isScriptLaunched = false
+    _isAuthenticating = false
+    CreateLoaderUI(getgenv().PayomboyZ_ErrorMsg or "❌ คีย์หมดอายุ! กรุณากรอกใหม่", passedKey)
+    getgenv().PayomboyZ_ShowUI = false
+    return
+end
+
+-- รอให้เกมโหลดเสร็จสมบูรณ์เพื่อป้องกัน Network Request ชนกับตัวเกมหลัก
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+local passedKey = GetPassedScriptKey()
+local savedKey = LoadSavedKey()
+local activeKey = (passedKey ~= "" and passedKey) or (savedKey ~= "" and savedKey) or ""
+
+if activeKey ~= "" then
+    -- ==============================================================================
+    -- 🚀 FAST SILENT AUTO-LOGIN (รันทันที 0.2s ป้องกันคำสั่งทับซ้อน)
+    -- ==============================================================================
+    task.wait(0.2)
+    PassToKeyChecker(activeKey)
+else
+    -- ถ้าไม่มีคีย์ ให้สร้าง UI โดยปล่อยช่องกรอก Key เป็นว่างไว้
+    CreateLoaderUI(nil, "")
+end
