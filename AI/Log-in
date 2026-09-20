@@ -597,12 +597,20 @@ local function PassToKeyChecker(userKey)
         return
     end
 
-    -- 🛡️ 2. กรณีเป็นผู้ใช้ทั่วไป (Luarmor Get Key User): ยืนยันสิทธิ์และส่งผ่าน Luarmor Loader
+    -- 🛡️ 2. กรณีเป็นผู้ใช้ทั่วไป (Luarmor Get Key User): ยืนยันสิทธิ์ผ่าน Luarmor API แล้วโหลดสคริปต์หลักจาก GitHub AI/src
+    local isLuKeyOk, luReason = VerifyLuarmorKey(userKey)
+    if not isLuKeyOk then
+        ShowToast("❌ คีย์ไม่ถูกต้อง", luReason or "คีย์ Luarmor ไม่ถูกต้องหรือหมดอายุ", true)
+        CreateLoaderUI(luReason, userKey)
+        return
+    end
+
     SaveKey(userKey)
     if getgenv then
         getgenv().script_key = userKey
         getgenv().PayomboyZ_UserKey = userKey
         getgenv().PayomboyZ_InputKey = userKey
+        getgenv().PayomboyZ_VerifiedKey = userKey
         getgenv().PayomboyZ_Authenticated = true
         getgenv().PayomboyZ_LoaderLoaded = true
     end
@@ -610,17 +618,22 @@ local function PassToKeyChecker(userKey)
     if getfenv then pcall(function() getfenv().script_key = userKey end) end
     _G.script_key = userKey
     _G.PayomboyZ_UserKey = userKey
+    _G.PayomboyZ_InputKey = userKey
+    _G.PayomboyZ_VerifiedKey = userKey
+    _G.PayomboyZ_Authenticated = true
     shared.script_key = userKey
+    shared.PayomboyZ_UserKey = userKey
     script_key = userKey
 
-    ShowToast("🛡️ Luarmor Engine", "กำลังโหลดสคริปต์ผ่าน Luarmor Loader...", false)
+    ShowToast("🛡️ Luarmor Engine", "ยืนยันคีย์สำเร็จ! กำลังโหลด AI Engine...", false)
 
-    -- โหลดผ่าน Luarmor Loader อย่างเป็นทางการ
+    -- โหลดสคริปต์หลัก (AI/src) จาก GitHub โดยตรง ไม่เรียกกลับเข้า Luarmor Loader
+    local aiSrcURL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/AI/src"
     local ok, err = pcall(function()
-        loadstring(game:HttpGet(LuarmorConfig.LuarmorLoaderURL))()
+        loadstring(game:HttpGet(aiSrcURL .. "?t=" .. tostring(tick())))()
     end)
     if not ok then
-        ShowToast("❌ Luarmor Error", "ไม่สามารถโหลด Luarmor Loader ได้: " .. tostring(err), true)
+        ShowToast("❌ Load Error", "ไม่สามารถโหลดสคริปต์หลักได้: " .. tostring(err), true)
     end
 end
 
