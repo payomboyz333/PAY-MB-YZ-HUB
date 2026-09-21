@@ -446,391 +446,271 @@ end
 -- 🔑 ฟังก์ชันตรวจสอบ Key ผ่าน KeyAI Engine & Verification Controller
 -- ==============================================================================
 local CachedKeyAI = nil
+local KeyAILoading = false
+
+-- Mobile-safe KeyAI resolver:
+-- IMPORTANT: this function must be called from a spawned/background task.
 local function ResolveKeyAI()
     if CachedKeyAI then return CachedKeyAI end
+    if KeyAILoading then
+        local waited = 0
+        while KeyAILoading and waited < 8 do
+            task.wait(0.2)
+            waited = waited + 0.2
+            if CachedKeyAI then return CachedKeyAI end
+        end
+        return CachedKeyAI
+    end
+
+    KeyAILoading = true
+    local loaded = nil
+
+    -- Remote KeyAI is optional. A failure here must NOT block the login UI.
     pcall(function()
-        local code = game:HttpGet(LuarmorConfig.KeyAI_URL .. "?t=" .. tostring(tick()))
+        local code = game:HttpGet(LuarmorConfig.KeyAI_URL .. "?t=" .. tostring(math.floor(os.clock() * 1000)))
         if code and #code > 0 then
             local fn = loadstring(code)
-            if fn then CachedKeyAI = fn() end
+            if fn then
+                local ok, result = pcall(fn)
+                if ok and type(result) == "table" then
+                    loaded = result
+                end
+            end
         end
     end)
-    if not CachedKeyAI and isfile and readfile then
+
+    -- Local fallback is useful for desktop, but never required for mobile.
+    if not loaded and isfile and readfile then
         pcall(function()
             local paths = { "KeyAI.txt", "c:/Users/Dream/Desktop/Games/KeyAI.txt" }
-            for _, p in ipairs(paths) do
-                if isfile(p) then
-                    local code = readfile(p)
+            for _, path in ipairs(paths) do
+                if isfile(path) then
+                    local code = readfile(path)
                     if code and #code > 0 then
                         local fn = loadstring(code)
-                        if fn then CachedKeyAI = fn(); break end
+                        if fn then
+                            local ok, result = pcall(fn)
+                            if ok and type(result) == "table" then
+                                loaded = result
+                                break
+                            end
+                        end
                     end
                 end
             end
         end)
     end
+
+    CachedKeyAI = loaded
+    KeyAILoading = false
     return CachedKeyAI
 end
 
--- ==============================================================================
+-- ===============================================================================
 -- 🔒 ระบบตรวจสอบ Luarmor Public SDK สำหรับผู้ใช้ระบบ Get Key (Free Tier)
--- ==============================================================================
+-- ===============================================================================
 local LuarmorSDKCache = nil
 local LuarmorSDKLoading = false
+
+-- This is intentionally synchronous internally, but every caller is moved to a
+-- background task so HttpGet cannot freeze the mobile UI/input thread.
 local function getLuarmorSDK()
-    if LuarmorSDKCache then return LuarmorSDKCache end
+    if LuarmorSDKCache then return LuarmorSDKCache, "OK" end
     if LuarmorSDKLoading then
         local waited = 0
-        while LuarmorSDKLoading and waited < 6 do
+        while LuarmorSDKLoading and waited < 8 do
             task.wait(0.2)
             waited = waited + 0.2
-            if LuarmorSDKCache then return LuarmorSDKCache end
+            if LuarmorSDKCache then return LuarmorSDKCache, "OK" end
         end
-        return LuarmorSDKCache
+        if LuarmorSDKCache then return LuarmorSDKCache, "OK" end
+        return nil, "TIMEOUT"
     end
+
     LuarmorSDKLoading = true
     local ok, lib = pcall(function()
-        return loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
+        local code = game:HttpGet("https://sdkapi-public.luarmor.net/library.lua")
+        if not code or #code == 0 then
+            error("empty Luarmor SDK response")
+        end
+        local loader = loadstring(code)
+        if not loader then error("failed to compile Luarmor SDK") end
+        return loader()
     end)
     LuarmorSDKLoading = false
+
     if ok and type(lib) == "table" then
         LuarmorSDKCache = lib
-        return lib
+        return lib, "OK"
     end
-    return nil
+
+    return nil, "NETWORK_ERROR"
 end
 
 local function VerifyLuarmorKey(key)
     if not key or #key < 10 then
-        return false, "❌ รูปแบบคีย์ไม่ถูกต้อง (ความยาวน้อยเกินไป)"
+        return "INVALID", "❌ รูปแบบคีย์ไม่ถูกต้อง (ความยาวน้อยเกินไป)"
     end
-    local sdk = getLuarmorSDK()
-    if sdk then
-        local targetIds = { LuarmorConfig.ScriptId, LuarmorConfig.ProjectId }
-        for _, sid in ipairs(targetIds) do
-            local status = nil
-            pcall(function()
-                sdk.script_id = sid
-                status = sdk.check_key(key)
-            end)
-            if status and type(status) == "table" and status.code then
-                if status.code == "KEY_VALID" then
-                    return true, "✅ ยืนยันคีย์ Luarmor สำเร็จ"
-                elseif status.code == "KEY_HWID_LOCKED" then
-                    return false, "❌ คีย์นี้ติดล็อคเครื่องอื่น (กรุณารีเซ็ต HWID ในเว็บ)"
-                elseif status.code == "KEY_EXPIRED" then
-                    return false, "❌ คีย์นี้หมดอายุแล้ว กรุณารับคีย์ใหม่"
-                elseif status.code == "KEY_BANNED" then
-                    return false, "❌ คีย์นี้ถูกระงับการใช้งาน (Banned)"
-                elseif status.code == "KEY_INVALID" then
-                    -- ตรวจ ID ถัดไป
-                end
+
+    local sdk, sdkState = getLuarmorSDK()
+    if not sdk then
+        return "NETWORK_ERROR", "📡 เชื่อมต่อ Luarmor ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง"
+    end
+
+    local targetIds = {}
+    if LuarmorConfig.ScriptId and LuarmorConfig.ScriptId ~= "" then
+        table.insert(targetIds, LuarmorConfig.ScriptId)
+    end
+    if LuarmorConfig.ProjectId and LuarmorConfig.ProjectId ~= "" and LuarmorConfig.ProjectId ~= LuarmorConfig.ScriptId then
+        table.insert(targetIds, LuarmorConfig.ProjectId)
+    end
+
+    local gotResponse = false
+    local lastCode = nil
+
+    for _, sid in ipairs(targetIds) do
+        local status = nil
+        local ok = pcall(function()
+            sdk.script_id = sid
+            status = sdk.check_key(key)
+        end)
+
+        if ok and type(status) == "table" and status.code then
+            gotResponse = true
+            lastCode = status.code
+
+            if status.code == "KEY_VALID" then
+                return "VALID", "✅ ยืนยันคีย์ Luarmor สำเร็จ"
+            elseif status.code == "KEY_HWID_LOCKED" then
+                return "INVALID", "❌ คีย์นี้ติดล็อคเครื่องอื่น (กรุณารีเซ็ต HWID ในเว็บ)"
+            elseif status.code == "KEY_EXPIRED" then
+                return "INVALID", "❌ คีย์นี้หมดอายุแล้ว กรุณารับคีย์ใหม่"
+            elseif status.code == "KEY_BANNED" then
+                return "INVALID", "❌ คีย์นี้ถูกระงับการใช้งาน (Banned)"
+            elseif status.code ~= "KEY_INVALID" then
+                -- Unknown server response: do not treat it as success.
+                return "NETWORK_ERROR", "📡 Luarmor ส่งสถานะที่ไม่รู้จัก: " .. tostring(status.code)
             end
         end
     end
-    -- กรณี SDK ติดต่อไม่ได้ชั่วคราว ให้ส่งต่อให้ Luarmor Loader ไปตรวจสอบเอง
-    return true, "✅ ส่งคีย์เข้าสู่ระบบ Luarmor Loader"
+
+    if gotResponse and lastCode == "KEY_INVALID" then
+        return "INVALID", "❌ คีย์ Luarmor ไม่ถูกต้อง กรุณาตรวจสอบคีย์อีกครั้ง"
+    end
+
+    return "NETWORK_ERROR", "📡 ไม่ได้รับผลตรวจสอบจาก Luarmor กรุณาลองใหม่"
+end
+
+local function SetLoginAuthState(userKey, isSuperVIP, isSpecial)
+    SaveKey(userKey)
+    if getgenv then
+        getgenv().PayomboyZ_UserKey = userKey
+        getgenv().PayomboyZ_InputKey = userKey
+        getgenv().PayomboyZ_VerifiedKey = userKey
+        getgenv().PayomboyZ_Authenticated = true
+        getgenv().PayomboyZ_LoaderLoaded = true
+        getgenv().PayomboyZ_IsSuperVIP = isSuperVIP == true
+        getgenv().PayomboyZ_IsSpecialKey = isSpecial == true
+    end
+    _G.PayomboyZ_UserKey = userKey
+    _G.PayomboyZ_InputKey = userKey
+    _G.PayomboyZ_VerifiedKey = userKey
+    _G.PayomboyZ_Authenticated = true
+    shared.PayomboyZ_UserKey = userKey
+end
+
+local function LoadRemoteScriptSafe(url, label)
+    if not url or url == "" then
+        return false, "URL ของสคริปต์ว่าง"
+    end
+    local ok, err = pcall(function()
+        local code = game:HttpGet(url .. (url:find("?", 1, true) and "&" or "?") .. "t=" .. tostring(math.floor(os.clock() * 1000)))
+        if not code or #code == 0 then error("empty response") end
+        local fn = loadstring(code)
+        if not fn then error("failed to compile " .. tostring(label or "script")) end
+        fn()
+    end)
+    return ok, err
 end
 
 local function PassToKeyChecker(userKey)
     if not userKey or userKey == "" then return end
     userKey = userKey:gsub("%s+", "")
 
+    -- IMPORTANT FOR MOBILE:
+    -- This entire function should be called from task.spawn(). It performs
+    -- network requests and must never run directly inside a UI event callback.
     local keyAI = ResolveKeyAI()
     local isSpecial = false
     local isSuperVIP = false
     local targetURL = nil
 
     if keyAI then
-        if type(keyAI.IsSuperVIP) == "function" and keyAI.IsSuperVIP(userKey) then
-            isSuperVIP = true
-            targetURL = keyAI.GetAIScriptURL(userKey)
-        elseif type(keyAI.IsSpecialKey) == "function" and keyAI.IsSpecialKey(userKey) then
-            isSpecial = true
-            targetURL = keyAI.GetAIScriptURL(userKey)
-        end
-    end
-
-    -- ปิด UI หน้า Loader ทันที
-    pcall(function()
-        local loaderGui = parentGui:FindFirstChild("PayomboyZ_SnowyLoader") or parentGui:FindFirstChild("PayomboyZ_HackerLoader")
-        if loaderGui then loaderGui:Destroy() end
-    end)
-
-    -- 👑 1. กรณีเป็น VIP / Special Customer: บายพาส Luarmor และโหลดสคริปต์ตรงจาก Github AI/src
-    if isSuperVIP or isSpecial then
-        SaveKey(userKey)
-        if getgenv then
-            getgenv().PayomboyZ_UserKey = userKey
-            getgenv().PayomboyZ_InputKey = userKey
-            getgenv().PayomboyZ_VerifiedKey = userKey
-            getgenv().PayomboyZ_Authenticated = true
-            getgenv().PayomboyZ_LoaderLoaded = true
-            getgenv().PayomboyZ_IsSuperVIP = isSuperVIP
-            getgenv().PayomboyZ_IsSpecialKey = isSpecial
-            getgenv().script_key = nil
-        end
-        if getrenv then pcall(function() getrenv().script_key = nil end) end
-        if getfenv then pcall(function() getfenv().script_key = nil end) end
-        _G.PayomboyZ_UserKey = userKey
-        _G.PayomboyZ_InputKey = userKey
-        _G.PayomboyZ_VerifiedKey = userKey
-        _G.script_key = nil
-        shared.PayomboyZ_UserKey = userKey
-        shared.script_key = nil
-        script_key = nil
-
-        if isSuperVIP then
-            ShowToast("👑 Super VIP Access", "ยินดีต้อนรับท่านผู้พัฒนา / SuperVIP!", false)
-        else
-            ShowToast("🔑 Special Key Verified", "ยินดีต้อนรับ! ผ่านการยืนยันด้วยคีย์ลูกค้าระดับพิเศษ", false)
-        end
-
-        if targetURL then
-            local success, err = pcall(function()
-                loadstring(game:HttpGet(targetURL .. "?t=" .. tostring(tick())))()
-            end)
-            if not success then
-                ShowToast("❌ Error", "ไม่สามารถโหลดสคริปต์หลักได้: " .. tostring(err), true)
+        if type(keyAI.IsSuperVIP) == "function" then
+            local ok, result = pcall(keyAI.IsSuperVIP, userKey)
+            if ok and result then
+                isSuperVIP = true
+                if type(keyAI.GetAIScriptURL) == "function" then
+                    pcall(function() targetURL = keyAI.GetAIScriptURL(userKey) end)
+                end
             end
         end
+        if not isSuperVIP and type(keyAI.IsSpecialKey) == "function" then
+            local ok, result = pcall(keyAI.IsSpecialKey, userKey)
+            if ok and result then
+                isSpecial = true
+                if type(keyAI.GetAIScriptURL) == "function" then
+                    pcall(function() targetURL = keyAI.GetAIScriptURL(userKey) end)
+                end
+            end
+        end
+    end
+
+    -- VIP / Special Customer: keep existing behavior, but protect every network step.
+    if isSuperVIP or isSpecial then
+        if not targetURL or targetURL == "" then
+            CreateLoaderUI("❌ ไม่พบ URL ของสคริปต์สำหรับ Key นี้", userKey)
+            return
+        end
+
+        SetLoginAuthState(userKey, isSuperVIP, isSpecial)
+        if getgenv then getgenv().script_key = nil end
+        _G.script_key = nil
+        shared.script_key = nil
+
+        local success, err = LoadRemoteScriptSafe(targetURL, "PayomboyZ AI Engine")
+        if not success then
+            ShowToast("❌ Load Error", "โหลดสคริปต์หลักไม่สำเร็จ: " .. tostring(err), true)
+            CreateLoaderUI("❌ โหลดสคริปต์หลักไม่สำเร็จ กรุณาลองใหม่", userKey)
+        end
         return
     end
 
-    -- 🛡️ 2. กรณีเป็นผู้ใช้ทั่วไป (Luarmor Get Key User): ยืนยันสิทธิ์ผ่าน Luarmor API แล้วโหลดสคริปต์หลักจาก GitHub AI/src
-    local isLuKeyOk, luReason = VerifyLuarmorKey(userKey)
-    if not isLuKeyOk then
-        ShowToast("❌ คีย์ไม่ถูกต้อง", luReason or "คีย์ Luarmor ไม่ถูกต้องหรือหมดอายุ", true)
-        CreateLoaderUI(luReason, userKey)
+    -- Normal user: verify first, then load AI/src only after VALID.
+    local verifyState, verifyReason = VerifyLuarmorKey(userKey)
+    if verifyState ~= "VALID" then
+        if verifyState == "NETWORK_ERROR" then
+            ShowToast("📡 Connection Error", verifyReason, "warn")
+        else
+            ShowToast("❌ คีย์ไม่ถูกต้อง", verifyReason, true)
+        end
+        CreateLoaderUI(verifyReason, userKey)
         return
     end
 
-    SaveKey(userKey)
-    if getgenv then
-        getgenv().script_key = userKey
-        getgenv().PayomboyZ_UserKey = userKey
-        getgenv().PayomboyZ_InputKey = userKey
-        getgenv().PayomboyZ_VerifiedKey = userKey
-        getgenv().PayomboyZ_Authenticated = true
-        getgenv().PayomboyZ_LoaderLoaded = true
-    end
-    if getrenv then pcall(function() getrenv().script_key = userKey end) end
-    if getfenv then pcall(function() getfenv().script_key = userKey end) end
+    SetLoginAuthState(userKey, false, false)
+    if getgenv then getgenv().script_key = userKey end
     _G.script_key = userKey
-    _G.PayomboyZ_UserKey = userKey
-    _G.PayomboyZ_InputKey = userKey
-    _G.PayomboyZ_VerifiedKey = userKey
-    _G.PayomboyZ_Authenticated = true
     shared.script_key = userKey
-    shared.PayomboyZ_UserKey = userKey
-    script_key = userKey
 
     ShowToast("🛡️ Luarmor Engine", "ยืนยันคีย์สำเร็จ! กำลังโหลด AI Engine...", false)
 
-    -- โหลดสคริปต์หลัก (AI/src) จาก GitHub โดยตรง ไม่เรียกกลับเข้า Luarmor Loader
     local aiSrcURL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/AI/src"
-    local ok, err = pcall(function()
-        loadstring(game:HttpGet(aiSrcURL .. "?t=" .. tostring(tick())))()
-    end)
+    local ok, err = LoadRemoteScriptSafe(aiSrcURL, "AI/src")
     if not ok then
         ShowToast("❌ Load Error", "ไม่สามารถโหลดสคริปต์หลักได้: " .. tostring(err), true)
+        CreateLoaderUI("❌ โหลด AI Engine ไม่สำเร็จ กรุณากด Verify ใหม่", userKey)
     end
-end
-
--- ==============================================================================
--- 🚀 HOP SERVER CONFIRM POPUP (Obsidian Glass + Snow + Roll Back Animation)
--- ==============================================================================
-local function ShowHopConfirmPopup(gameData)
-    local parentGui = (typeof(gethui) == "function") and gethui() or CoreGui
-    local existing = parentGui:FindFirstChild("PayomboyZ_HopPopup")
-    if existing then existing:Destroy() end
-
-    local CH = {
-        shell = Color3.fromRGB(8, 22, 12), glassDeep = Color3.fromRGB(8, 24, 14),
-        glassRaised = Color3.fromRGB(18, 48, 26), surfaceRaised = Color3.fromRGB(20, 56, 30),
-        surfaceHover = Color3.fromRGB(28, 78, 40), primary = Color3.fromRGB(0, 230, 100),
-        primaryHover = Color3.fromRGB(40, 255, 140), primaryPressed = Color3.fromRGB(0, 180, 75),
-        danger = Color3.fromRGB(255, 60, 60), success = Color3.fromRGB(46, 224, 140),
-        vvipGold = Color3.fromRGB(255, 200, 60), cyan = Color3.fromRGB(0, 240, 120),
-    }
-
-    local popGui = Instance.new("ScreenGui")
-    popGui.Name = "PayomboyZ_HopPopup"
-    popGui.ResetOnSpawn = false; popGui.IgnoreGuiInset = true
-    popGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    popGui.DisplayOrder = 999999; popGui.Parent = parentGui
-
-    local overlay = Instance.new("Frame")
-    overlay.Size = UDim2.fromScale(1, 1)
-    overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    overlay.BackgroundTransparency = 1; overlay.BorderSizePixel = 0
-    overlay.ZIndex = 1; overlay.Parent = popGui
-
-    local card = Instance.new("Frame")
-    card.Name = "HopCard"; card.AnchorPoint = Vector2.new(0.5, 0.5)
-    card.Position = UDim2.new(0.5, 0, 0.38, 0)
-    card.Size = UDim2.fromOffset(380, 230); card.Rotation = -10
-    card.BackgroundColor3 = CH.shell; card.BackgroundTransparency = 0.08
-    card.BorderSizePixel = 0; card.ClipsDescendants = true
-    card.ZIndex = 2; card.Parent = popGui
-    local cardCorner = Instance.new("UICorner")
-    cardCorner.CornerRadius = UDim.new(0, 18); cardCorner.Parent = card
-    local cardStroke = Instance.new("UIStroke")
-    cardStroke.Color = CH.cyan; cardStroke.Thickness = 1.5
-    cardStroke.Transparency = 0.2; cardStroke.Parent = card
-
-    -- 💻 Matrix Digital Rain Layer
-    local matrixLayer = Instance.new("Frame")
-    matrixLayer.Size = UDim2.fromScale(1, 1); matrixLayer.BackgroundTransparency = 1
-    matrixLayer.ClipsDescendants = true; matrixLayer.ZIndex = 3; matrixLayer.Parent = card
-    task.spawn(function()
-        local chars = { "0", "1", "0x4F", "PBG", "AI", "101", "0101", "7F", "FF", "EXEC", "SYS" }
-        local cols = {}
-        for i = 1, 18 do
-            local lbl = Instance.new("TextLabel")
-            lbl.Size = UDim2.fromOffset(24, 40); lbl.Position = UDim2.new(math.random(), 0, math.random(), 0)
-            lbl.BackgroundTransparency = 1; lbl.Text = chars[math.random(1, #chars)]
-            lbl.TextColor3 = Color3.fromRGB(0, math.random(180, 255), math.random(60, 120))
-            lbl.Font = Enum.Font.Code; lbl.TextSize = math.random(10, 12)
-            lbl.TextTransparency = math.random(25, 65) / 100
-            lbl.ZIndex = 3; lbl.Parent = matrixLayer
-            cols[#cols + 1] = { label = lbl, speed = math.random(12, 32) / 10000, pos = lbl.Position.Y.Scale }
-        end
-        while task.wait(0.03) do
-            if not popGui or not popGui.Parent then break end
-            for _, c in ipairs(cols) do
-                c.pos = c.pos + c.speed
-                if c.pos > 1.05 then c.pos = -0.05; c.label.Text = chars[math.random(1, #chars)] end
-                c.label.Position = UDim2.new(c.label.Position.X.Scale, 0, c.pos, 0)
-            end
-        end
-    end)
-
-    local iconFrame = Instance.new("Frame")
-    iconFrame.Size = UDim2.fromOffset(64, 64); iconFrame.Position = UDim2.new(0, 22, 0, 22)
-    iconFrame.BackgroundColor3 = CH.glassDeep; iconFrame.BorderSizePixel = 0
-    iconFrame.ZIndex = 5; iconFrame.Parent = card
-    local iconCorner = Instance.new("UICorner"); iconCorner.CornerRadius = UDim.new(0, 10); iconCorner.Parent = iconFrame
-    local iconStroke = Instance.new("UIStroke")
-    iconStroke.Color = (gameData.Type == "VVIP") and CH.vvipGold or CH.cyan
-    iconStroke.Thickness = 1.5; iconStroke.Parent = iconFrame
-    local iconImg = Instance.new("ImageLabel")
-    iconImg.Size = UDim2.fromScale(1, 1); iconImg.BackgroundTransparency = 1
-    iconImg.Image = "rbxthumb://type=GameIcon&id=" .. tostring(gameData.IconId or gameData.PlaceId) .. "&w=150&h=150"
-    iconImg.ScaleType = Enum.ScaleType.Crop; iconImg.ZIndex = 6; iconImg.Parent = iconFrame
-    local iC = Instance.new("UICorner"); iC.CornerRadius = UDim.new(0, 10); iC.Parent = iconImg
-    task.spawn(function()
-        pcall(function()
-            local info = MarketplaceService:GetProductInfo(gameData.PlaceId)
-            if info and info.IconImageAssetId and info.IconImageAssetId > 0 and iconImg.Parent then
-                iconImg.Image = "rbxassetid://" .. tostring(info.IconImageAssetId)
-            end
-        end)
-    end)
-
-    local catBadge = Instance.new("TextLabel")
-    catBadge.Size = UDim2.fromOffset(60, 18); catBadge.Position = UDim2.new(0, 22, 0, 92)
-    catBadge.BackgroundColor3 = (gameData.Type == "VVIP") and CH.vvipGold or CH.success
-    catBadge.BackgroundTransparency = 0.15
-    catBadge.Text = (gameData.Type == "VVIP") and "👑 VVIP" or "🟢 FREE"
-    catBadge.TextColor3 = Color3.fromRGB(15, 10, 12); catBadge.Font = Enum.Font.GothamBold
-    catBadge.TextSize = 10; catBadge.ZIndex = 5; catBadge.Parent = card
-    local cbC = Instance.new("UICorner"); cbC.CornerRadius = UDim.new(0, 5); cbC.Parent = catBadge
-
-    local function makeLabel(parent, text, pos, size, font, tsize, color, align)
-        local lbl = Instance.new("TextLabel")
-        lbl.Size = size; lbl.Position = pos; lbl.BackgroundTransparency = 1
-        lbl.Text = text; lbl.TextColor3 = color or Color3.fromRGB(255,255,255)
-        lbl.Font = font or Enum.Font.GothamBold; lbl.TextSize = tsize or 12
-        lbl.TextXAlignment = align or Enum.TextXAlignment.Left
-        lbl.TextWrapped = true; lbl.TextTruncate = Enum.TextTruncate.AtEnd
-        lbl.ZIndex = 5; lbl.Parent = parent; return lbl
-    end
-
-    makeLabel(card, gameData.FullName or gameData.Name, UDim2.new(0,100,0,22), UDim2.new(1,-108,0,22), Enum.Font.GothamBold, 16, Color3.fromRGB(255,255,255))
-    makeLabel(card, "ต้องการเข้าเล่นแมพนี้หรือไม่?", UDim2.new(0,100,0,44), UDim2.new(1,-108,0,36), Enum.Font.Gotham, 11, Color3.fromRGB(255,255,255))
-
-    local divLine = Instance.new("Frame")
-    divLine.Size = UDim2.new(1,-40,0,1); divLine.Position = UDim2.new(0,20,0,122)
-    divLine.BackgroundColor3 = CH.glassRaised; divLine.BorderSizePixel = 0
-    divLine.ZIndex = 5; divLine.Parent = card
-
-    local descBox = Instance.new("Frame")
-    descBox.Size = UDim2.new(1,-40,0,48); descBox.Position = UDim2.new(0,20,0,132)
-    descBox.BackgroundColor3 = CH.glassDeep; descBox.BackgroundTransparency = 0.15
-    descBox.BorderSizePixel = 0; descBox.ZIndex = 5; descBox.Parent = card
-    local descBoxC = Instance.new("UICorner"); descBoxC.CornerRadius = UDim.new(0,8); descBoxC.Parent = descBox
-    makeLabel(descBox, "🎮 " .. (gameData.Keywords or ""), UDim2.new(0,10,0,0), UDim2.new(1,-20,1,0), Enum.Font.Gotham, 10, Color3.fromRGB(255,255,255))
-
-    makeLabel(card, "📌 PlaceId: " .. tostring(gameData.PlaceId), UDim2.new(0,20,0,184), UDim2.new(1,-40,0,14), Enum.Font.GothamBold, 9, Color3.fromRGB(200,200,200))
-
-    local cancelBtn = Instance.new("TextButton")
-    cancelBtn.Size = UDim2.fromOffset(156, 38); cancelBtn.Position = UDim2.new(0,20,1,-54)
-    cancelBtn.BackgroundColor3 = CH.surfaceRaised; cancelBtn.BackgroundTransparency = 0.18
-    cancelBtn.Text = "❌  ยกเลิก"; cancelBtn.TextColor3 = Color3.fromRGB(255,255,255)
-    cancelBtn.Font = Enum.Font.GothamBold; cancelBtn.TextSize = 12
-    cancelBtn.BorderSizePixel = 0; cancelBtn.ZIndex = 5; cancelBtn.Parent = card
-    local canC = Instance.new("UICorner"); canC.CornerRadius = UDim.new(0,10); canC.Parent = cancelBtn
-
-    local hopBtn = Instance.new("TextButton")
-    hopBtn.Size = UDim2.fromOffset(218, 38); hopBtn.Position = UDim2.new(1,-238,1,-54)
-    hopBtn.BackgroundColor3 = Color3.fromRGB(255, 45, 85); hopBtn.Text = "🎮  เข้าเล่นแมพนี้เลย!"
-    hopBtn.TextColor3 = Color3.fromRGB(255,255,255)
-    hopBtn.Font = Enum.Font.GothamBold; hopBtn.TextSize = 12
-    hopBtn.BorderSizePixel = 0; hopBtn.ZIndex = 5; hopBtn.Parent = card
-    local hopC = Instance.new("UICorner"); hopC.CornerRadius = UDim.new(0,10); hopC.Parent = hopBtn
-
-    local function closePopup()
-        TweenService:Create(card, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-            Position = UDim2.new(0.5,0,0.62,0), Size = UDim2.fromOffset(380,230), Rotation = 8
-        }):Play()
-        TweenService:Create(overlay, TweenInfo.new(0.22), { BackgroundTransparency = 1 }):Play()
-        task.delay(0.28, function() if popGui and popGui.Parent then popGui:Destroy() end end)
-    end
-
-    cancelBtn.MouseButton1Click:Connect(closePopup)
-    overlay.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            closePopup()
-        end
-    end)
-
-    hopBtn.MouseButton1Click:Connect(function()
-        hopBtn.Active = false
-        task.spawn(function()
-            local placeId = gameData.PlaceId
-            local ok = false
-            hopBtn.Text = "🔄 [1/3] Teleport..."
-            TweenService:Create(hopBtn, TweenInfo.new(0.15), { BackgroundColor3 = CH.primaryPressed }):Play()
-            pcall(function() TeleportService:Teleport(placeId); ok = true end)
-            if ok then return end; task.wait(0.35)
-            hopBtn.Text = "🔄 [2/3] TeleportAsync..."
-            pcall(function()
-                local opts = Instance.new("TeleportOptions"); opts.ShouldReserveServer = false
-                TeleportService:TeleportAsync(placeId, {LocalPlayer}, opts); ok = true
-            end)
-            if ok then return end; task.wait(0.35)
-            hopBtn.Text = "🔄 [3/3] Reserve & Join..."
-            pcall(function()
-                local code = TeleportService:ReserveServer(placeId)
-                if code and code ~= "" then TeleportService:TeleportToPrivateServer(placeId, code, {LocalPlayer}); ok = true end
-            end)
-            if ok then return end
-            hopBtn.Text = "❌ Teleport ล้มเหลว"
-            TweenService:Create(hopBtn, TweenInfo.new(0.2), { BackgroundColor3 = CH.danger }):Play()
-            task.delay(3, function()
-                if hopBtn and hopBtn.Parent then
-                    hopBtn.Text = "🎮  เข้าเล่นแมพนี้เลย!"; hopBtn.Active = true
-                    TweenService:Create(hopBtn, TweenInfo.new(0.25), { BackgroundColor3 = CH.primary }):Play()
-                end
-            end)
-        end)
-    end)
-
-    TweenService:Create(overlay, TweenInfo.new(0.25), { BackgroundTransparency = 0.55 }):Play()
-    TweenService:Create(card, TweenInfo.new(0.38, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Position = UDim2.new(0.5,0,0.5,0), Size = UDim2.fromOffset(420,260), Rotation = 0
-    }):Play()
 end
 
 -- ==============================================================================
@@ -1615,105 +1495,119 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
             return
         end
 
-        -- 1. ตรวจสอบสิทธิ์ผ่าน KeyAI ก่อน (สำหรับ SuperVIP และ Special Customer)
-        local keyAI = ResolveKeyAI()
-        local isSuperVIP = keyAI and type(keyAI.IsSuperVIP) == "function" and keyAI.IsSuperVIP(key)
-        local isSpecial = keyAI and type(keyAI.IsSpecialKey) == "function" and keyAI.IsSpecialKey(key)
-
-        if isSuperVIP then
-            busy = true
-            setButtonEnabled(redeem, false)
-            task.spawn(function()
-                setButtonText(redeem, "[1/3] Verifying VVIP...")
-                setStatus("👑 [1/3] Verifying VVIP Key...", COLORS.cyan)
-                task.wait(0.3)
-                setButtonText(redeem, "[2/3] Connecting...")
-                setStatus("🚀 [2/3] Handshake KeyAI → Bypassing Luarmor...", COLORS.cyan)
-                task.wait(0.3)
-                setButtonText(redeem, "[3/3] Launching!")
-                setStatus("✅ [3/3] VVIP Access Granted! Launching now...", COLORS.success)
-                task.wait(0.35)
-                if gui and gui.Parent then gui:Destroy() end
-                PassToKeyChecker(key)
-            end)
-            return
-        end
-
-        if isSpecial then
-            busy = true
-            setButtonEnabled(redeem, false)
-            task.spawn(function()
-                setButtonText(redeem, "[1/2] Verifying Special Key...")
-                setStatus("🔑 [1/2] Validating Customer Key...", COLORS.cyan)
-                task.wait(0.3)
-                setButtonText(redeem, "[2/2] Launching!")
-                setStatus("✅ [2/2] Special Key Granted! Launching now...", COLORS.success)
-                task.wait(0.35)
-                if gui and gui.Parent then gui:Destroy() end
-                PassToKeyChecker(key)
-            end)
-            return
-        end
-
-        -- 2. กรณีผู้ใช้ทั่วไป (Get Key): ตรวจสอบผ่านระบบ Luarmor API / SDK
-        setButtonText(redeem, "Checking...")
-        setStatus("🔍 กำลังตรวจสอบคีย์ Luarmor...", COLORS.cyan)
-
-        local isLuarmorValid, luarmorReason = VerifyLuarmorKey(key)
-
-        if not isLuarmorValid then
-            failedAttempts = failedAttempts + 1
-
-            -- 📳 Shake Box Animation
-            task.spawn(function()
-                local origPos = input.Position
-                for i = 1, 6 do
-                    local offset = (i % 2 == 0 and 8 or -8)
-                    input.Position = origPos + UDim2.fromOffset(offset, 0)
-                    task.wait(0.035)
-                end
-                input.Position = origPos
-            end)
-
-            ShowToast("❌ คีย์ไม่ถูกต้อง", luarmorReason or "กรุณาตรวจสอบคีย์แล้วลองใหม่อีกครั้ง", "error")
-
-            if failedAttempts >= 3 then
-                cooldownUntil = os.time() + 30
-                failedAttempts = 0
-                setStatus("🛑 ใส่คีย์ผิด 3 ครั้ง! Cooldown 30 วินาที", COLORS.danger)
-                setButtonText(redeem, "🛑 Cooldown (30s)")
-                task.spawn(function()
-                    for s = 30, 1, -1 do
-                        if os.time() >= cooldownUntil then break end
-                        setButtonText(redeem, "🛑 Cooldown (" .. s .. "s)")
-                        task.wait(1)
-                    end
-                    setButtonText(redeem, "Verify Key")
-                end)
-            else
-                setStatus("❌ " .. (luarmorReason or "Key ไม่ถูกต้อง!") .. " (พยายามอีก " .. (3 - failedAttempts) .. " ครั้ง)", COLORS.warning)
-                setButtonText(redeem, "Verify Key")
-            end
-            return
-        end
-
-        -- ผ่านการตรวจ Luarmor -> ดำเนินการเชื่อมต่อ Luarmor เต็มรูปแบบ (5 ขั้นตอน)
+        -- IMPORTANT FOR MOBILE:
+        -- Do not call ResolveKeyAI / HttpGet / SDK directly from Activated.
+        -- UI callbacks stay responsive while all network work runs in a task.
         busy = true
         setButtonEnabled(redeem, false)
-        task.spawn(function()
-            setButtonText(redeem, "[1/5] Checking...")
-            setStatus("🔍 [1/5] Checking Key format...", COLORS.cyan); task.wait(0.3)
-            setButtonText(redeem, "[2/5] Connecting...")
-            setStatus("📡 [2/5] Connecting to Luarmor API...", COLORS.cyan); task.wait(0.3)
-            setButtonText(redeem, "[3/5] Verifying...")
-            setStatus("🛡️ [3/5] Verifying HWID & Whitelist...", COLORS.cyan); task.wait(0.3)
-            setButtonText(redeem, "[4/5] Saving...")
-            setStatus("💾 [4/5] Saving key to device...", COLORS.cyan); task.wait(0.3)
-            setButtonText(redeem, "[5/5] Launching!")
-            setStatus("🚀 [5/5] Launching PayomboyZ Hub via Luarmor...", COLORS.success); task.wait(0.3)
+        setButtonText(redeem, "Connecting...")
+        setStatus("📡 กำลังเชื่อมต่อระบบยืนยัน...", COLORS.cyan)
 
-            if gui and gui.Parent then gui:Destroy() end
-            PassToKeyChecker(key)
+        task.spawn(function()
+            local ok, err = xpcall(function()
+                setStatus("🔑 กำลังตรวจสอบสิทธิ์...", COLORS.cyan)
+                setButtonText(redeem, "Verifying...")
+
+                -- Resolve KeyAI only inside the background task.
+                local keyAI = ResolveKeyAI()
+                local isSuperVIP = false
+                local isSpecial = false
+
+                if keyAI then
+                    if type(keyAI.IsSuperVIP) == "function" then
+                        local callOk, result = pcall(keyAI.IsSuperVIP, key)
+                        isSuperVIP = callOk and result == true
+                    end
+                    if not isSuperVIP and type(keyAI.IsSpecialKey) == "function" then
+                        local callOk, result = pcall(keyAI.IsSpecialKey, key)
+                        isSpecial = callOk and result == true
+                    end
+                end
+
+                if isSuperVIP then
+                    setButtonText(redeem, "Launching...")
+                    setStatus("👑 ยืนยัน SuperVIP สำเร็จ กำลังเปิด AI Engine...", COLORS.success)
+                    task.wait(0.15)
+                    if gui and gui.Parent then gui:Destroy() end
+                    PassToKeyChecker(key)
+                    return
+                end
+
+                if isSpecial then
+                    setButtonText(redeem, "Launching...")
+                    setStatus("🔑 ยืนยัน Special Key สำเร็จ กำลังเปิด AI Engine...", COLORS.success)
+                    task.wait(0.15)
+                    if gui and gui.Parent then gui:Destroy() end
+                    PassToKeyChecker(key)
+                    return
+                end
+
+                setStatus("🛡️ กำลังตรวจสอบ Key กับ Luarmor...", COLORS.cyan)
+                setButtonText(redeem, "Checking Luarmor...")
+
+                local verifyState, verifyReason = VerifyLuarmorKey(key)
+
+                if verifyState == "NETWORK_ERROR" then
+                    setStatus("📡 เชื่อมต่อ Luarmor ไม่สำเร็จ — ลองใหม่ได้เลย", COLORS.warning)
+                    ShowToast("📡 Connection Error", verifyReason or "กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่", "warn")
+                    setButtonText(redeem, "Retry Verify")
+                    return
+                end
+
+                if verifyState ~= "VALID" then
+                    failedAttempts = failedAttempts + 1
+
+                    task.spawn(function()
+                        local origPos = input.Position
+                        for i = 1, 6 do
+                            local offset = (i % 2 == 0 and 8 or -8)
+                            input.Position = origPos + UDim2.fromOffset(offset, 0)
+                            task.wait(0.035)
+                        end
+                        input.Position = origPos
+                    end)
+
+                    ShowToast("❌ คีย์ไม่ถูกต้อง", verifyReason or "กรุณาตรวจสอบคีย์แล้วลองใหม่อีกครั้ง", "error")
+
+                    if failedAttempts >= 3 then
+                        cooldownUntil = os.time() + 30
+                        failedAttempts = 0
+                        setStatus("🛑 ใส่คีย์ผิด 3 ครั้ง! Cooldown 30 วินาที", COLORS.danger)
+                        setButtonText(redeem, "🛑 Cooldown (30s)")
+                        task.spawn(function()
+                            for sec = 30, 1, -1 do
+                                if os.time() >= cooldownUntil then break end
+                                setButtonText(redeem, "🛑 Cooldown (" .. sec .. "s)")
+                                task.wait(1)
+                            end
+                            if gui and gui.Parent then
+                                setButtonText(redeem, "Verify Key")
+                            end
+                        end)
+                    else
+                        setStatus("❌ " .. (verifyReason or "Key ไม่ถูกต้อง!") .. " (พยายามอีก " .. (3 - failedAttempts) .. " ครั้ง)", COLORS.warning)
+                        setButtonText(redeem, "Verify Key")
+                    end
+                    return
+                end
+
+                setButtonText(redeem, "Launching...")
+                setStatus("🚀 ยืนยันสำเร็จ กำลังโหลด PayomboyZ AI Engine...", COLORS.success)
+                task.wait(0.15)
+                if gui and gui.Parent then gui:Destroy() end
+                PassToKeyChecker(key)
+            end, debug.traceback)
+
+            -- Always release the lock if the worker itself errors.
+            busy = false
+            if not ok then
+                if gui and gui.Parent then
+                    setButtonEnabled(redeem, true)
+                    setButtonText(redeem, "Verify Key")
+                    setStatus("❌ Login error: " .. tostring(err), COLORS.danger)
+                    ShowToast("❌ Login Error", "เกิดข้อผิดพลาดระหว่าง Login กรุณาลองใหม่", true)
+                end
+            end
         end)
     end
 
@@ -1799,7 +1693,7 @@ local savedKey = LoadSavedKey()
 if passedKey ~= "" then
     SaveKey(passedKey)
     ShowToast("🔑 PayomboyZ Hub", "พบ Key จากตัวรันสคริปต์! กำลังเข้าสู่ระบบ...", false)
-    PassToKeyChecker(passedKey)
+    task.spawn(function() PassToKeyChecker(passedKey) end)
 elseif savedKey ~= "" then
     local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
     local EscapeGui = Instance.new("ScreenGui")
@@ -1836,7 +1730,7 @@ elseif savedKey ~= "" then
     end)
 
     ShowToast("🔑 PayomboyZ Hub", "พบ Key เดิม! กำลังเชื่อมต่ออัตโนมัติ...", false)
-    PassToKeyChecker(savedKey)
+    task.spawn(function() PassToKeyChecker(savedKey) end)
 else
     CreateLoaderUI(nil, "")
 end
