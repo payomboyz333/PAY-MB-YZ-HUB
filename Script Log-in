@@ -266,6 +266,10 @@ local SupportedGames = {
     [9794412726] = { Name = "FISCH", IsVVIP = false },
     [131716211654599] = { Name = "FISCH", IsVVIP = false },
 
+    -- ⭐ แมพ VIP (ใช้สิทธิ์ VIP ตามระบบเดิม)
+    [16205713724] = { Name = "Slayers 2", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/slayer2-obfuscated.lua" },
+    [136406881576517] = { Name = "Slayers 2", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/slayer2-obfuscated.lua" },
+
     -- 👑 แมพ VVIP (เฉพาะ Special Key หรือ Luarmor ระดับ VIP)
     [125927821145949] = { Name = "Mine a Mountain", IsVVIP = true },
     [142823291] = { Name = "Murder Mystery 2", IsVVIP = true },
