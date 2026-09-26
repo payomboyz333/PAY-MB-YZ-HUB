@@ -42,6 +42,12 @@ end)
 -- ป้องกันการรันซ้ำซ้อนระดับ Global (Smooth Instance Replacement Guard)
 local _ENV = (getgenv and getgenv()) or _G
 
+-- ถ้าสคริปต์ตัวเกมหลักรันอยู่แล้วในเซิร์ฟเวอร์นี้ ให้ข้ามตัว Loader ทันที ป้องกันหน้า Login ซ้อน
+if _ENV.__PAYOMBOYZ_SCRIPT_LAUNCHED then
+    warn("[PAYOMBØYZ HUB] Game script already running in this session, skipping duplicate loader.")
+    return
+end
+
 -- ถ้ามี UI เก่าเปิดค้างอยู่ ให้ทำลายทิ้งก่อนเริ่มรอบใหม่
 pcall(function()
     if _ENV.__PAYOMBOYZ_CURRENT_GUI and _ENV.__PAYOMBOYZ_CURRENT_GUI.Parent then
@@ -49,9 +55,7 @@ pcall(function()
     end
 end)
 
--- รีเซ็ตสถานะเพื่อยอมให้ผู้เล่นกด Execute ใหม่ได้เสมอ (Reload / Re-inject Support)
 _ENV.__PAYOMBOYZ_HUB_ACTIVE = true
-_ENV.__PAYOMBOYZ_SCRIPT_LAUNCHED = false
 
 local _isAuthenticating = false
 local _isScriptLaunched = false
@@ -270,8 +274,8 @@ local SupportedGames = {
     [131716211654599] = { Name = "FISCH", IsVVIP = false },
 
     -- 👑 แมพ VVIP (เฉพาะ Special Key หรือ Luarmor ระดับ VIP)
-    [16205713724] = { Name = "Slayers 2", IsVVIP = true },
-    [136406881576517] = { Name = "Slayers 2", IsVVIP = true },
+    [16205713724] = { Name = "Slayers 2", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/slayer2-obfuscated.lua" },
+    [136406881576517] = { Name = "Slayers 2", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/slayer2-obfuscated.lua" },
     [125927821145949] = { Name = "Mine a Mountain", IsVVIP = true },
     [142823291] = { Name = "Murder Mystery 2", IsVVIP = true },
     [107653945083776] = { Name = "Roll Anime To Fight", IsVVIP = true },
@@ -292,9 +296,9 @@ local SupportedGames = {
         [132785415090516] = { Name = "Iron Soul Boss", IsVVIP = true },
 
     -- ⚔️ Dungeon Lootr (Place IDs สำหรับ Lobby, Dungeon รวมทุกด่าน, และ AFK World)
-    [106484206883664] = { Name = "Dungeon Lootr", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/PayomboyZ_Lootr.lua", LocalFile = "DungeonLootr.lua" },
-    [132285059959516] = { Name = "Dungeon Lootr", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/PayomboyZ_Lootr.lua", LocalFile = "DungeonLootr.lua" },
-    [129976314326660] = { Name = "Dungeon Lootr", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/PayomboyZ_Lootr.lua", LocalFile = "DungeonLootr.lua" },
+    [106484206883664] = { Name = "Dungeon Lootr", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/DungeonLootr-obfuscated.lua", LocalFile = "DungeonLootr.lua" },
+    [132285059959516] = { Name = "Dungeon Lootr", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/DungeonLootr-obfuscated.lua", LocalFile = "DungeonLootr.lua" },
+    [129976314326660] = { Name = "Dungeon Lootr", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/DungeonLootr-obfuscated.lua", LocalFile = "DungeonLootr.lua" },
 }
 if getgenv then getgenv().PayomboyZ_SupportedGames = SupportedGames end
 _G.PayomboyZ_SupportedGames = SupportedGames
@@ -310,7 +314,7 @@ local SupportedUniverses = {
         Name = "Dungeon Lootr", 
         IsVVIP = false,
         LocalFile = "DungeonLootr.lua",
-        URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/PayomboyZ_Lootr.lua"
+        URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/DungeonLootr-obfuscated.lua"
     },
 
     -- 🗡️ Attack On Titan Revolution (Universe ID: 4658598196 — ทุกโหมด/แมพในจักรวาล AOTR)
@@ -329,7 +333,11 @@ local SupportedUniverses = {
     [5750914919] = { Name = "FISCH", IsVVIP = false },
 
     -- ⚔️ Slayers 2 (Universe ID: 5595353122)
-    [5595353122] = { Name = "Slayers 2", IsVVIP = true },
+    [5595353122] = { 
+        Name = "Slayers 2", 
+        IsVVIP = true,
+        URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/slayer2-obfuscated.lua"
+    },
 }
 if getgenv then getgenv().PayomboyZ_SupportedUniverses = SupportedUniverses end
 _G.PayomboyZ_SupportedUniverses = SupportedUniverses
@@ -487,6 +495,26 @@ local function safeFetch(url)
     return (ok and content) or ""
 end
 
+-- ฟังก์ชันทำลาย Loader UI ทันทีอย่างปลอดภัย (ใช้ตอน Auto-Login สำเร็จหรือสคริปต์เริ่มรัน)
+local function DismissLoaderUI()
+    pcall(function()
+        if _ENV.__PAYOMBOYZ_CURRENT_GUI and _ENV.__PAYOMBOYZ_CURRENT_GUI.Parent then
+            _ENV.__PAYOMBOYZ_CURRENT_GUI:Destroy()
+        end
+        _ENV.__PAYOMBOYZ_CURRENT_GUI = nil
+    end)
+    pcall(function()
+        local parentGui = getParentGui and getParentGui()
+        if parentGui then
+            for _, child in ipairs(parentGui:GetChildren()) do
+                if child:IsA("ScreenGui") and (child.Name == "PayomboyZ_LoaderUI" or child.Name == "RobloxLoaderGui") then
+                    child:Destroy()
+                end
+            end
+        end
+    end)
+end
+
 -- ฟังก์ชันรัน FlowAuth / Loader ปลายทางพร้อมระบบ Auto-Retry และ Retry UI
 local function RunFlowAuthWithRetry(targetUrl, userKey, maxRetries, onFailCallback)
     if _isScriptLaunched then
@@ -606,6 +634,10 @@ local function RunFlowAuthWithRetry(targetUrl, userKey, maxRetries, onFailCallba
     -- ขั้นตอนที่ 3: สั่งรันสคริปต์แบบแยก Thread (รันครั้งเดียวเท่านั้น! ไม่ retry สคริปต์ซ้ำเมื่อมี runtime error)
     _isScriptLaunched = true
     _isAuthenticating = false
+    _ENV.__PAYOMBOYZ_SCRIPT_LAUNCHED = true
+
+    -- ปิด/ทำลาย Loader UI ทันที 100% ป้องกันหน้า Login ขึ้นซ้อนกับสคริปต์เกม
+    DismissLoaderUI()
 
     task.spawn(function()
         local runOk, runErr = pcall(fn)
@@ -970,7 +1002,7 @@ local function PassToKeyChecker(key)
         local isAuthed = false
         local authReason = nil
 
-        if isSuperVIP then
+        if isSuperVIP or isVVIP then
             isAuthed = true
         else
             isAuthed, authReason = VerifyKeyWithLuarmorAPI(key)
@@ -978,6 +1010,7 @@ local function PassToKeyChecker(key)
 
         if isAuthed then
             SaveKey(key)
+            DismissLoaderUI()
 
             -- ดึง Target URL จาก KeyEngine ก่อนเป็นอันดับแรกเพื่อความปลอดภัยสูงสุด
             local engine = GetRemoteKeyData()
@@ -986,8 +1019,10 @@ local function PassToKeyChecker(key)
                 resolvedUrl = engine.GetGameURL(placeId, key)
             end
 
-            if resolvedUrl then
+            if resolvedUrl and resolvedUrl ~= "https://raw.githubusercontent.com/Payomboyz0028/Yaranikaaaa/refs/heads/main/WaitKey" then
                 targetUrl = resolvedUrl
+            elseif gameData and gameData.URL then
+                targetUrl = gameData.URL
             else
                 -- Fallback เดิมหาก KeyEngine ยังไม่ได้อัปเดตบน GitHub
                 if gameData and gameData.IsVVIP and not isVVIP then
@@ -1007,8 +1042,8 @@ local function PassToKeyChecker(key)
             end)
         else
             _isAuthenticating = false
-            ClearSavedKeys()
-            CreateLoaderUI(authReason or "❌ Key เดิมหมดอายุแล้ว กรุณากรอก Key ใหม่", "")
+            -- ส่ง Key เดิมเข้าไปในกล่อง Input เผื่อผู้เล่นแค่เน็ตหลุด ไม่ลบทิ้งทันที
+            CreateLoaderUI(authReason or "❌ Key เดิมหมดอายุแล้ว กรุณากรอก Key ใหม่", key)
         end
     end)
 end
@@ -1064,6 +1099,12 @@ end
 -- ⚡ CRIMSON LIGHTNING HUB STYLE MODERN LOADER UI GENERATOR FOR PAYOMBOYZ HUB
 -- ==============================================================================
 local function CreateLoaderUI(initialStatus, defaultKeyText)
+    -- ป้องกันหน้า Login ขึ้นซ้อนถ้าสคริปต์เกมหลักเปิดขึ้นมาแล้ว
+    if _ENV.__PAYOMBOYZ_SCRIPT_LAUNCHED or _isScriptLaunched then
+        warn("[PAYOMBØYZ HUB] Target script is already running, suppressing CreateLoaderUI.")
+        return
+    end
+
     local parentGui = getParentGui()
 
     pcall(function()
@@ -2236,13 +2277,34 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
     local supportedGamesList = {
         -- FREE GAMES
         {
+            Name = "Dungeon Lootr",
+            FullName = "Dungeon Lootr",
+            UniverseId = 9656201728,
+            PlaceId = 106484206883664,
+            AltPlaceIds = { 132285059959516, 129976314326660 },
+            IconId = 106484206883664,
+            Type = "FREE",
+            Keywords = "Kill Aura • 10 Dungeons • Raids",
+        },
+        {
             Name = "Attack On Titan Rev.",
             FullName = "Attack On Titan Revolution",
+            UniverseId = 4658598196,
             PlaceId = 13379208636,
             AltPlaceIds = { 14916516914, 14932214603 },
             IconId = 13379208636,
             Type = "FREE",
             Keywords = "AOTR • Titan Farm",
+        },
+        {
+            Name = "FISCH",
+            FullName = "FISCH",
+            UniverseId = 5750914919,
+            PlaceId = 16732694052,
+            AltPlaceIds = { 72907489978215, 17722839796, 9794412726, 131716211654599 },
+            IconId = 16732694052,
+            Type = "FREE",
+            Keywords = "Auto Fish • Shake • Radar",
         },
         {
             Name = "Anime Card Farm",
@@ -2310,6 +2372,16 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
 
         -- VVIP GAMES
         {
+            Name = "Slayers 2",
+            FullName = "Slayers 2",
+            UniverseId = 5595353122,
+            PlaceId = 16205713724,
+            AltPlaceIds = { 136406881576517 },
+            IconId = 16205713724,
+            Type = "VVIP",
+            Keywords = "Auto Farm • Fast Attack • Demon",
+        },
+        {
             Name = "Mine a Mountain",
             FullName = "Mine a Mountain",
             PlaceId = 125927821145949,
@@ -2369,13 +2441,16 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
         local dynamicMapData = GetDynamicSupportedGames()
         local existingPlaceIds = {}
         for _, g in ipairs(supportedGamesList) do
-            existingPlaceIds[g.PlaceId] = true
+            if type(g.PlaceId) == "number" then existingPlaceIds[g.PlaceId] = true end
+            if g.UniverseId then existingPlaceIds["u_" .. tostring(g.UniverseId)] = true end
             if g.AltPlaceIds then
-                for _, alt in ipairs(g.AltPlaceIds) do existingPlaceIds[alt] = true end
+                for _, alt in ipairs(g.AltPlaceIds) do 
+                    if type(alt) == "number" then existingPlaceIds[alt] = true end 
+                end
             end
         end
         for pid, gName in pairs(dynamicMapData) do
-            if not existingPlaceIds[pid] then
+            if type(pid) == "number" and not existingPlaceIds[pid] then
                 existingPlaceIds[pid] = true
                 local isVvip = gName:find("%(VVIP%)")
                 local cleanName = gName:gsub("%s*%(VVIP%)", "")
@@ -2403,6 +2478,9 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
                 end
             end
         end
+        if not isCurrentGame and gameData.UniverseId and game.GameId == gameData.UniverseId then
+            isCurrentGame = true
+        end
 
         local gameCard = create("Frame", {
             Name = "GameCard_" .. index,
@@ -2410,7 +2488,7 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
             BackgroundColor3 = isCurrentGame and COLORS.surfaceRaised or COLORS.glassDeep,
             BackgroundTransparency = 0.25,
             BorderSizePixel = 0,
-            LayoutOrder = index,
+            LayoutOrder = isCurrentGame and 0 or index,
         }, gamesScroll)
         round(gameCard, 10)
 
@@ -2431,8 +2509,8 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
 
         local fallbackGamepad = lucideIcon(iconFrame, "gamepad", UDim2.fromOffset(13, 13), UDim2.fromOffset(20, 20), COLORS.cyan, 1)
 
-        if isCurrentGame then
-            pcall(function()
+        pcall(function()
+            if type(gameData.IconId) == "number" and gameData.IconId > 0 then
                 local iconImg = create("ImageLabel", {
                     Size = UDim2.fromScale(1, 1),
                     BackgroundTransparency = 1,
@@ -2441,8 +2519,8 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
                     ZIndex = 2,
                 }, iconFrame)
                 round(iconImg, 8)
-            end)
-        end
+            end
+        end)
 
         -- Game Details
         textLabel(gameCard, gameData.Name, UDim2.fromOffset(62, 8), UDim2.new(1, -120, 0, 18), Enum.Font.GothamBold, 11, COLORS.text)
@@ -2924,8 +3002,8 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
             local isAuthed = false
             local luarmorReason = nil
 
-            if isSuperVIP then
-                setStatus(L("superVIPOk"), COLORS.cyan)
+            if isSuperVIP or isVVIP then
+                setStatus(isSuperVIP and L("superVIPOk") or L("vvipSuccess"), COLORS.cyan)
                 isAuthed = true
                 task.wait(0.15)
             else
@@ -2941,8 +3019,10 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
                     resolvedUrl = engine.GetGameURL(game.PlaceId, key)
                 end
 
-                if resolvedUrl then
+                if resolvedUrl and resolvedUrl ~= "https://raw.githubusercontent.com/Payomboyz0028/Yaranikaaaa/refs/heads/main/WaitKey" then
                     targetUrl = resolvedUrl
+                elseif gameData and gameData.URL then
+                    targetUrl = gameData.URL
                 else
                     if isVVIPMap and not isVVIP then
                         setStatus(L("vvipMapWarn"), COLORS.warning)
@@ -3483,6 +3563,7 @@ if getgenv and getgenv().PayomboyZ_LoggedOut then
     getgenv().PayomboyZ_LoggedOut = nil
     _isScriptLaunched = false
     _isAuthenticating = false
+    _ENV.__PAYOMBOYZ_SCRIPT_LAUNCHED = false
     ClearSavedKeys()
     local passedKey = GetPassedScriptKey()
     CreateLoaderUI("✅ ออกจากระบบเรียบร้อยแล้ว กรุณากรอกคีย์ใหม่", passedKey)
@@ -3493,6 +3574,7 @@ if getgenv and getgenv().PayomboyZ_ShowUI then
     local passedKey = GetPassedScriptKey()
     _isScriptLaunched = false
     _isAuthenticating = false
+    _ENV.__PAYOMBOYZ_SCRIPT_LAUNCHED = false
     CreateLoaderUI(getgenv().PayomboyZ_ErrorMsg or "❌ คีย์หมดอายุ! กรุณากรอกใหม่", passedKey)
     getgenv().PayomboyZ_ShowUI = false
     return
@@ -3503,15 +3585,26 @@ if not game:IsLoaded() then
     game.Loaded:Wait()
 end
 
-local passedKey = GetPassedScriptKey()
-local savedKey = LoadSavedKey()
-local activeKey = (passedKey ~= "" and passedKey) or (savedKey ~= "" and savedKey) or ""
+-- ป้องกันรันซ้อนถ้าสคริปต์หลักกำลังรันอยู่แล้วในเซสชั่นนี้
+if _ENV.__PAYOMBOYZ_SCRIPT_LAUNCHED then
+    warn("[PAYOMBØYZ HUB] Game script already running in this session, skipping loader.")
+    return
+end
+
+-- รอให้ File System และ Environment ของ Executor พร้อม (แก้ปัญหา readfile คืนค่าว่างตอนเพิ่งวาปเข้าแมพ)
+local activeKey = ""
+for attempt = 1, 10 do
+    local passedKey = GetPassedScriptKey()
+    local savedKey = LoadSavedKey()
+    activeKey = (passedKey ~= "" and passedKey) or (savedKey ~= "" and savedKey) or ""
+    if activeKey ~= "" then break end
+    task.wait(0.05)
+end
 
 if activeKey ~= "" then
     -- ==============================================================================
-    -- 🚀 FAST SILENT AUTO-LOGIN (รันทันที 0.2s ป้องกันคำสั่งทับซ้อน)
+    -- 🚀 FAST SILENT AUTO-LOGIN (รันทันที ป้องกันคำสั่งทับซ้อน)
     -- ==============================================================================
-    task.wait(0.2)
     PassToKeyChecker(activeKey)
 else
     -- ถ้าไม่มีคีย์ ให้สร้าง UI โดยปล่อยช่องกรอก Key เป็นว่างไว้
