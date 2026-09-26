@@ -289,10 +289,65 @@ local SupportedGames = {
     [80693195250724] = { Name = "Iron Soul Boss", IsVVIP = true },
     [112316840155266] = { Name = "Iron Soul Boss", IsVVIP = true },
     [113290951185459] = { Name = "Anime Dice", IsVVIP = true },
-    [132785415090516] = { Name = "Iron Soul Boss", IsVVIP = true },
+        [132785415090516] = { Name = "Iron Soul Boss", IsVVIP = true },
+
+    -- ⚔️ Dungeon Lootr (Place IDs สำหรับ Lobby, Dungeon รวมทุกด่าน, และ AFK World)
+    [106484206883664] = { Name = "Dungeon Lootr", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/PayomboyZ_Lootr.lua", LocalFile = "DungeonLootr.lua" },
+    [132285059959516] = { Name = "Dungeon Lootr", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/PayomboyZ_Lootr.lua", LocalFile = "DungeonLootr.lua" },
+    [129976314326660] = { Name = "Dungeon Lootr", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/PayomboyZ_Lootr.lua", LocalFile = "DungeonLootr.lua" },
 }
 if getgenv then getgenv().PayomboyZ_SupportedGames = SupportedGames end
 _G.PayomboyZ_SupportedGames = SupportedGames
+
+-- ==============================================================================
+-- 🌌 UNIVERSE ID ROUTER (ครอบคลุมทุก Place ID ในจักรวาลเดียวกันโดยอัตโนมัติ)
+-- ==============================================================================
+local SupportedUniverses = {
+    -- [UniverseId] = { Name = "ชื่อเกม", IsVVIP = true/false, NoXeno = true/false, URL = "...", LocalFile = "..." }
+
+    -- ⚔️ Dungeon Lootr (Universe ID: 9656201728 — ครอบคลุม Lobby, 10 Dungeons, Raids, Payload, AFK World)
+    [9656201728] = { 
+        Name = "Dungeon Lootr", 
+        IsVVIP = false,
+        LocalFile = "DungeonLootr.lua",
+        URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/PayomboyZ_Lootr.lua"
+    },
+
+    -- 🗡️ Attack On Titan Revolution (Universe ID: 4658598196 — ทุกโหมด/แมพในจักรวาล AOTR)
+    [4658598196] = { Name = "Attack On Titan Revolution", IsVVIP = false, NoXeno = true },
+
+    -- 🎯 Arena Sniper (Universe ID: 9534705677 — ทุกแมพยิงใน Arena Sniper)
+    [9534705677] = { Name = "Arena Sniper", IsVVIP = false },
+
+    -- 🌙 99 Nights (Universe ID: 7326934954)
+    [7326934954] = { Name = "99 Nights", IsVVIP = false },
+
+    -- 🌊 Blox Fruit (Universe ID: 994732206 — ทุก Sea & ทุก Raid)
+    [994732206] = { Name = "Blox Fruit", IsVVIP = false },
+
+    -- 🎣 FISCH (Universe ID: 5750914919 — ทุกเกาะและทุกโซนตกปลา)
+    [5750914919] = { Name = "FISCH", IsVVIP = false },
+
+    -- ⚔️ Slayers 2 (Universe ID: 5595353122)
+    [5595353122] = { Name = "Slayers 2", IsVVIP = true },
+}
+if getgenv then getgenv().PayomboyZ_SupportedUniverses = SupportedUniverses end
+_G.PayomboyZ_SupportedUniverses = SupportedUniverses
+
+-- 🔗 เชื่อมโยง Cascading Fallback: ตรวจ Place ID ใน SupportedGames ก่อนเสมอ (แมพที่แยก URL เฉพาะเช่น Iron Soul / Roll Anime)
+-- หาก Place ID ไม่ได้ระบุแยกไว้ จะดึงจาก Universe ID อัตโนมัติ (Dungeon Lootr, AOTR, Arena Sniper, ฯลฯ)
+setmetatable(SupportedGames, {
+    __index = function(tbl, key)
+        if typeof(key) == "number" then
+            local uData = SupportedUniverses and SupportedUniverses[game.GameId]
+            if uData then
+                return uData
+            end
+        end
+        return nil
+    end
+})
+
 
 -- ==============================================================================
 -- 🔒 ฟังก์ชันตรวจสอบ Luarmor แบบแม่นยำสูง (Global Public SDK + VVIP Fast-Pass)
@@ -467,13 +522,30 @@ local function RunFlowAuthWithRetry(targetUrl, userKey, maxRetries, onFailCallba
         script_key = userKey
     end
 
-    -- ขั้นตอนที่ 1: ดาวน์โหลดซอร์สโค้ด (Retry เฉพาะ Network/HTTP ถ้าโหลดไม่ผ่าน)
+    -- ขั้นตอนที่ 1: ดาวน์โหลดซอร์สโค้ด (รองรับทั้ง Local File และดาวน์โหลดจาก Network/HTTP)
     local fetchUrl = targetUrl
     if type(fetchUrl) == "string" and fetchUrl:find("raw.githubusercontent.com") and not fetchUrl:find("%?") then
         fetchUrl = fetchUrl .. "?t=" .. tostring(os.time())
     end
 
     local source = nil
+
+    -- ตรวจสอบ Local File ก่อน (กรณีรันเทสบนเครื่อง หรือไฟล์ LocalFile ที่กำหนดไว้ใน SupportedGames / SupportedUniverses)
+    if typeof(readfile) == "function" and typeof(isfile) == "function" then
+        local pId = game.PlaceId
+        local gData = SupportedGames and SupportedGames[pId]
+        if gData and gData.LocalFile and isfile(gData.LocalFile) then
+            local okLocal, localContent = pcall(readfile, gData.LocalFile)
+            if okLocal and type(localContent) == "string" and #localContent > 50 then
+                source = localContent
+            end
+        elseif type(fetchUrl) == "string" and not fetchUrl:find("^https?://") and isfile(fetchUrl) then
+            local okLocal, localContent = pcall(readfile, fetchUrl)
+            if okLocal and type(localContent) == "string" and #localContent > 50 then
+                source = localContent
+            end
+        end
+    end
     for attempt = 1, maxRetries do
         local okHttp, content = pcall(game.HttpGet, game, fetchUrl)
         if okHttp and type(content) == "string" and #content > 50 and not content:find("404: Not Found") and not content:find("automated source fetching") then
@@ -731,6 +803,13 @@ local function GetDynamicSupportedGames()
     for pid, data in pairs(SupportedGames) do
         if data and data.Name then
             games[pid] = data.Name .. (data.IsVVIP and " (VVIP)" or "")
+        end
+    end
+    if SupportedUniverses then
+        for uid, data in pairs(SupportedUniverses) do
+            if data and data.Name then
+                games["u_" .. tostring(uid)] = data.Name .. (data.IsVVIP and " (VVIP)" or "")
+            end
         end
     end
     return games
