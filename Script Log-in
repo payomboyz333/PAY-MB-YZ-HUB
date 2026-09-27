@@ -57,6 +57,18 @@ end)
 
 _ENV.__PAYOMBOYZ_HUB_ACTIVE = true
 
+-- Cross-Executor HTTP Request Bridge (สำหรับรองรับทั้ง PC และ Mobile ทุกตัวรัน)
+pcall(function()
+    local fn = (typeof(request) == "function" and request)
+            or (typeof(http_request) == "function" and http_request)
+            or (typeof(syn) == "table" and typeof(syn.request) == "function" and syn.request)
+            or (typeof(http) == "table" and typeof(http.request) == "function" and http.request)
+    if fn then
+        if typeof(request) ~= "function" and getgenv then getgenv().request = fn end
+        if typeof(http_request) ~= "function" and getgenv then getgenv().http_request = fn end
+    end
+end)
+
 local _isAuthenticating = false
 local _isScriptLaunched = false
 
@@ -243,35 +255,35 @@ local SupportedGames = {
     -- [PlaceId] = { Name = "ชื่อเกม", IsVVIP = true/false, NoXeno = true/false }
     
     -- 🆓 แมพฟรี (ทุกคนเล่นได้)
-    [13379208636] = { Name = "Attack On Titan Revolution", IsVVIP = false, NoXeno = true },
-    [14916516914] = { Name = "Attack On Titan Revolution", IsVVIP = false, NoXeno = true },
-    [14932214603] = { Name = "Attack On Titan Revolution", IsVVIP = false, NoXeno = true },
-    [125039473548047] = { Name = "Anime Card Farm", IsVVIP = false, NoXeno = true },
-    [122446657157717] = { Name = "Arena Sniper", IsVVIP = false },
-    [126042865144779] = { Name = "Arena Sniper", IsVVIP = false },
-    [119259569670784] = { Name = "Arena Sniper", IsVVIP = false },
-    [90165746516953] = { Name = "Arena Sniper", IsVVIP = false },
-    [104973076655377] = { Name = "Capybara Vs Plant", IsVVIP = false },
-    [128736949265057] = { Name = "Gakuran", IsVVIP = false },
-    [126509999114328] = { Name = "99 Nights", IsVVIP = false },
-    [79546208627805] = { Name = "99 Nights", IsVVIP = false },
-    [2753915549] = { Name = "Blox Fruit", IsVVIP = false },
-    [79091703265657] = { Name = "Blox Fruit", IsVVIP = false },
-    [4442272183] = { Name = "Blox Fruit", IsVVIP = false },
-    [7449423635] = { Name = "Blox Fruit", IsVVIP = false },
-    [117539213094671] = { Name = "Roll a Gnome", IsVVIP = false },
-    [94640181989498] = { Name = "Chicken Fighter", IsVVIP = false },
-    [94939256104840] = { Name = "Chicken Fighter", IsVVIP = false },
-    [126884695634066] = { Name = "Grow a Garden 1", IsVVIP = false },
-    [97598239454123] = { Name = "Grow a Garden 2", IsVVIP = false },
-    [74102906764176] = { Name = "Greedy Grower", IsVVIP = false },
-    [124216119978534] = { Name = "Ride a Pet", IsVVIP = false },
-    [76377501906469] = { Name = "Steal An Anime EGG!", IsVVIP = false },
-    [16732694052] = { Name = "FISCH", IsVVIP = false },
-    [72907489978215] = { Name = "FISCH", IsVVIP = false },
-    [17722839796] = { Name = "FISCH", IsVVIP = false },
-    [9794412726] = { Name = "FISCH", IsVVIP = false },
-    [131716211654599] = { Name = "FISCH", IsVVIP = false },
+    [13379208636] = { Name = "Attack On Titan Revolution", IsVVIP = false, NoXeno = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/AOTR-obfuscated.lua" },
+    [14916516914] = { Name = "Attack On Titan Revolution", IsVVIP = false, NoXeno = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/AOTR-obfuscated.lua" },
+    [14932214603] = { Name = "Attack On Titan Revolution", IsVVIP = false, NoXeno = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/AOTR-obfuscated.lua" },
+    [125039473548047] = { Name = "Anime Card Farm", IsVVIP = false, NoXeno = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Anime%20Card%20Farm-obfuscated.lua" },
+    [122446657157717] = { Name = "Arena Sniper", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Sniper%20Arena-obfuscated.lua" },
+    [126042865144779] = { Name = "Arena Sniper", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Sniper%20Arena-obfuscated.lua" },
+    [119259569670784] = { Name = "Arena Sniper", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Sniper%20Arena-obfuscated.lua" },
+    [90165746516953] = { Name = "Arena Sniper", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Sniper%20Arena-obfuscated.lua" },
+    [104973076655377] = { Name = "Capybara Vs Plant", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/CapybaraVsPlant-obfuscated.lua" },
+    [128736949265057] = { Name = "Gakuran", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Gakurun-obfuscated.lua" },
+    [126509999114328] = { Name = "99 Nights", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/99Night-obfuscated.lua" },
+    [79546208627805] = { Name = "99 Nights", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/99Night-obfuscated.lua" },
+    [2753915549] = { Name = "Blox Fruit", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Blox%20Fruit-obfuscated.lua" },
+    [79091703265657] = { Name = "Blox Fruit", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Blox%20Fruit-obfuscated.lua" },
+    [4442272183] = { Name = "Blox Fruit", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Blox%20Fruit-obfuscated.lua" },
+    [7449423635] = { Name = "Blox Fruit", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Blox%20Fruit-obfuscated.lua" },
+    [117539213094671] = { Name = "Roll a Gnome", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Roll%20a%20Gnome-obfuscated.lua" },
+    [94640181989498] = { Name = "Chicken Fighter", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Grow%20a%20Chicken%20Fighter-obfuscated.lua" },
+    [94939256104840] = { Name = "Chicken Fighter", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Grow%20a%20Chicken%20Fighter-obfuscated.lua" },
+    [126884695634066] = { Name = "Grow a Garden 1", IsVVIP = false, URL = "https://raw.githubusercontent.com/Payomboyz0028/Yaranikaaaa/refs/heads/main/GGAGG" },
+    [97598239454123] = { Name = "Grow a Garden 2", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Grow%20a%20garden%202-obfuscated.lua" },
+    [74102906764176] = { Name = "Greedy Grower", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Greedy%20Grower-obfuscated.lua" },
+    [124216119978534] = { Name = "Ride a Pet", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Ride%20a%20pet-obfuscated.lua" },
+    [76377501906469] = { Name = "Steal An Anime EGG!", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Steal%20Anime%20Egg-obfuscated.lua" },
+    [16732694052] = { Name = "FISCH", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/FISCH-obfuscated.lua" },
+    [72907489978215] = { Name = "FISCH", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/FISCH-obfuscated.lua" },
+    [17722839796] = { Name = "FISCH", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/FISCH-obfuscated.lua" },
+    [9794412726] = { Name = "FISCH", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/FISCH-obfuscated.lua" },
+    [131716211654599] = { Name = "FISCH", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/FISCH-obfuscated.lua" },
 
     -- 👑 แมพ VVIP (เฉพาะ Special Key หรือ Luarmor ระดับ VIP)
     [16205713724] = { Name = "Slayers 2", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/slayer2-obfuscated.lua" },
@@ -375,6 +387,11 @@ local function getLuarmorSDK()
     end
     LuarmorSDKLoading = true
     local ok, lib = pcall(function()
+        local sdkContent = safeFetch("https://sdkapi-public.luarmor.net/library.lua")
+        if sdkContent and #sdkContent > 50 then
+            local fn = loadstring(sdkContent)
+            if fn then return fn() end
+        end
         return loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
     end)
     LuarmorSDKLoading = false
@@ -391,24 +408,40 @@ task.spawn(function()
     task.spawn(GetRemoteKeyData)
 end)
 
+local function IsValidKeyFormat(k)
+    if not k or type(k) ~= "string" then return false end
+    local clean = k:gsub("%s+", "")
+    -- คีย์ Luarmor ที่ได้จาก Ad Checkpoint / ระบบ Luarmor จะมีความยาว 25-55 ตัวอักษร เป็น Alphanumeric
+    return #clean >= 25 and #clean <= 55 and clean:match("^[A-Za-z0-9_%-]+$") ~= nil
+end
+
 local function VerifyKeyWithLuarmorAPI(key)
     if not key or key == "" then return false, "⚠️ กรุณากรอก Key ก่อนเข้าใช้งาน" end
     key = key:gsub("%s+", "")
     
-    -- 1. ตรวจสอบ SuperVIP (Fast-Path ข้ามการยิง API 100% เฉพาะ SuperVIP คีย์เดียวเท่านั้น)
+    -- 1. ตรวจสอบ SuperVIP & VVIP (Fast-Path ข้ามการยิง API 100%)
     if IsSuperVIPKey(key) then
         return true, "👑 ยืนยันสิทธิ์ SuperVIP สำเร็จ"
     end
+    if IsVVIPKey(key) then
+        return true, "👑 ยืนยันสิทธิ์ VVIP สำเร็จ"
+    end
 
-    -- 2. ตรวจสอบผ่าน KeyEngine (ซึ่งมี Developer Token และระบบ Hash ป้องกันอยู่ภายใน Key-obfuscated.lua)
+    -- 2. ตรวจสอบผ่าน KeyEngine (ถ้าโหลดเสร็จแล้ว)
     local engine = GetRemoteKeyData()
     if engine and type(engine.VerifyKey) == "function" then
         local ok, reason = engine.VerifyKey(key)
-        return ok, reason
+        if ok then
+            return true, reason or "✅ ยืนยันสิทธิ์สำเร็จ"
+        elseif type(reason) == "string" and (reason:find("หมดอายุ") or reason:find("ระงับ") or reason:find("ล็อคเครื่องอื่น")) then
+            return false, reason
+        end
     end
 
-    -- 3. Fallback: ตรวจสอบผ่าน Official Luarmor Public SDK (กรณี KeyEngine ยังโหลดไม่เสร็จ)
+    -- 3. ตรวจสอบผ่าน Official Luarmor Public SDK
     local sdk = getLuarmorSDK()
+    local lastStatus = nil
+
     if sdk then
         local targetScriptIds = {
             "fcaefd984d0c3cd3a7335c0cf332c860", -- Project ID PayomboyZ HUB
@@ -416,25 +449,37 @@ local function VerifyKeyWithLuarmorAPI(key)
         }
         for _, sid in ipairs(targetScriptIds) do
             local status = nil
-            pcall(function()
+            local execOk = pcall(function()
                 sdk.script_id = sid
                 status = sdk.check_key(key)
             end)
-            if status and type(status) == "table" and status.code then
+            if execOk and status and type(status) == "table" and status.code then
+                lastStatus = status.code
                 if status.code == "KEY_VALID" then
                     return true, "✅ ยืนยันคีย์ Luarmor สำเร็จ"
-                elseif status.code == "KEY_HWID_LOCKED" then
-                    return false, "❌ คีย์นี้ติดล็อคเครื่องอื่น (กรุณารีเซ็ต HWID ในบอท/เว็บ)"
+                elseif status.code == "KEY_INCORRECT" then
+                    return false, "❌ Key ไม่ถูกต้อง (กรุณาตรวจสอบคีย์ที่ได้จากเว็บ)"
                 elseif status.code == "KEY_EXPIRED" then
                     return false, "❌ คีย์นี้หมดอายุแล้ว กรุณากรอกคีย์ใหม่"
                 elseif status.code == "KEY_BANNED" then
                     return false, "❌ คีย์นี้ถูกระงับการใช้งาน (Banned)"
+                elseif status.code == "KEY_HWID_LOCKED" then
+                    return false, "❌ คีย์นี้ติดล็อคเครื่องอื่น (กรุณารีเซ็ต HWID ในบอท/เว็บ)"
                 end
+                -- ถ้าเป็น SECURITY_ERROR, INVALID_EXECUTOR, TIME_ERROR, UNKNOWN_ERROR จะหลุดมาเช็ค Safe-Pass ด้านล่าง
             end
         end
     end
 
-    return false, "❌ Key ไม่ถูกต้องหรือหมดอายุ"
+    -- 4. 🛡️ CLOUDFLARE & MOBILE EXECUTOR RESILIENCE (SAFE-PASS GUARD)
+    -- ถ้า Luarmor Server มีปัญหา / Cloudflare บล็อกตัวรันมือถือ / SECURITY_ERROR / INVALID_EXECUTOR / เน็ตหลุด
+    -- ถ้าผู้เล่นกรอกคีย์ที่มีรูปแบบถูกต้องตามมาตรฐาน Luarmor (Alphanumeric 25-55 ตัวอักษร):
+    if IsValidKeyFormat(key) then
+        warn("[PAYOMBØYZ HUB] Luarmor network/Cloudflare response (" .. tostring(lastStatus or "Offline") .. ") -> Safe-Pass granted.")
+        return true, "✅ ยืนยันคีย์ Luarmor สำเร็จ"
+    end
+
+    return false, "❌ Key ไม่ถูกต้องหรือรูปแบบไม่ถูกต้อง"
 end
 
 
@@ -513,6 +558,34 @@ local function DismissLoaderUI()
             end
         end
     end)
+end
+
+-- ==============================================================================
+-- 🔐 DYNAMIC CRYPTOGRAPHIC TICKET ISSUER (ANTI-DIRECT RUN / ANTI-HTTP-SPY)
+-- ==============================================================================
+local function PBZ_CreateAuthTicket()
+    local players = game:GetService("Players")
+    local p = players.LocalPlayer or players:GetPropertyChangedSignal("LocalPlayer"):Wait() or players.LocalPlayer
+    local uId = p and p.UserId or 0
+    local pId = game.PlaceId
+    local gId = game.GameId
+    local curTime = os.time()
+    local curWin = math.floor(curTime / 180)
+    local salt = "PBZ_AUTH_SECRET_SALT_2026_99X"
+
+    local function _pbzHash(s)
+        local h1, h2 = 5381, 2747636419
+        for i = 1, #s do
+            local b = string.byte(s, i)
+            h1 = ((h1 * 33) + b) % 4294967296
+            h2 = ((h2 * 31) + b + (h1 % 65536)) % 4294967296
+        end
+        return string.format("%08x%08x", h1, h2)
+    end
+
+    local payload = string.format("%d_%d_%d_%d", uId, pId, gId, curWin)
+    local sig = _pbzHash(payload .. ":" .. salt)
+    return string.format("PBZ_%s_%s", payload, sig)
 end
 
 -- ฟังก์ชันรัน FlowAuth / Loader ปลายทางพร้อมระบบ Auto-Retry และ Retry UI
@@ -639,8 +712,14 @@ local function RunFlowAuthWithRetry(targetUrl, userKey, maxRetries, onFailCallba
     -- ปิด/ทำลาย Loader UI ทันที 100% ป้องกันหน้า Login ขึ้นซ้อนกับสคริปต์เกม
     DismissLoaderUI()
 
+    local authTicket = PBZ_CreateAuthTicket()
+    if _ENV then
+        _ENV.__PAYOMBOYZ_AUTH_TICKET = authTicket
+        _ENV.__PAYOMBOYZ_AUTH_TIME = os.time()
+    end
+
     task.spawn(function()
-        local runOk, runErr = pcall(fn)
+        local runOk, runErr = pcall(fn, authTicket)
         if not runOk then
             warn("[PAYOMBØYZ HUB] Target script runtime notice: " .. tostring(runErr))
         end
@@ -2283,7 +2362,7 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
             PlaceId = 106484206883664,
             AltPlaceIds = { 132285059959516, 129976314326660 },
             IconId = 106484206883664,
-            Type = "FREE",
+            Type = "VIP",
             Keywords = "Kill Aura • 10 Dungeons • Raids",
         },
         {
@@ -2530,16 +2609,19 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
             textLabel(gameCard, "🟢 ACTIVE NOW", UDim2.fromOffset(62, 42), UDim2.new(1, -120, 0, 12), Enum.Font.GothamBold, 8, COLORS.success)
         end
 
-        -- Type Badge (FREE / VVIP)
+        -- Type Badge (FREE / VIP / VVIP)
+        local isVvip = (gameData.Type == "VVIP")
+        local isVip = (gameData.Type == "VIP")
         local badge = create("Frame", {
             Position = UDim2.new(1, -50, 0, 8),
             Size = UDim2.fromOffset(42, 18),
-            BackgroundColor3 = gameData.Type == "VVIP" and COLORS.primary or COLORS.surfaceRaised,
+            BackgroundColor3 = isVvip and COLORS.primary or COLORS.surfaceRaised,
             BorderSizePixel = 0,
         }, gameCard)
         round(badge, 6)
 
-        textLabel(badge, gameData.Type, UDim2.fromScale(0, 0), UDim2.fromScale(1, 1), Enum.Font.GothamBold, 8, gameData.Type == "VVIP" and COLORS.text or COLORS.success, Enum.TextXAlignment.Center)
+        local badgeColor = isVvip and COLORS.text or (isVip and COLORS.cyan or COLORS.success)
+        textLabel(badge, gameData.Type, UDim2.fromScale(0, 0), UDim2.fromScale(1, 1), Enum.Font.GothamBold, 8, badgeColor, Enum.TextXAlignment.Center)
 
         -- 🎮 เล่น button
         local playBtn = Instance.new("TextButton")
