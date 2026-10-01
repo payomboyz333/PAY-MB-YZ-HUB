@@ -263,6 +263,7 @@ local SupportedGames = {
     [126042865144779] = { Name = "Arena Sniper", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Sniper%20Arena-obfuscated.lua" },
     [119259569670784] = { Name = "Arena Sniper", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Sniper%20Arena-obfuscated.lua" },
     [90165746516953] = { Name = "Arena Sniper", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Sniper%20Arena-obfuscated.lua" },
+    [74424488747487] = { Name = "Arena Sniper", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Sniper%20Arena-obfuscated.lua" },
     [104973076655377] = { Name = "Capybara Vs Plant", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/CapybaraVsPlant-obfuscated.lua" },
     [128736949265057] = { Name = "Gakuran", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Gakurun-obfuscated.lua" },
     [126509999114328] = { Name = "99 Nights", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/99Night-obfuscated.lua" },
@@ -333,19 +334,40 @@ local SupportedUniverses = {
     },
 
     -- 🗡️ Attack On Titan Revolution (Universe ID: 4658598196 — ทุกโหมด/แมพในจักรวาล AOTR)
-    [4658598196] = { Name = "Attack On Titan Revolution", IsVVIP = false, NoXeno = true },
+    [4658598196] = { 
+        Name = "Attack On Titan Revolution", 
+        IsVVIP = false, 
+        NoXeno = true,
+        URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/AOTR-obfuscated.lua"
+    },
 
     -- 🎯 Arena Sniper (Universe ID: 9534705677 — ทุกแมพยิงใน Arena Sniper)
-    [9534705677] = { Name = "Arena Sniper", IsVVIP = false },
+    [9534705677] = { 
+        Name = "Arena Sniper", 
+        IsVVIP = false,
+        URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Sniper%20Arena-obfuscated.lua"
+    },
 
     -- 🌙 99 Nights (Universe ID: 7326934954)
-    [7326934954] = { Name = "99 Nights", IsVVIP = false },
+    [7326934954] = { 
+        Name = "99 Nights", 
+        IsVVIP = false,
+        URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/99Night-obfuscated.lua"
+    },
 
     -- 🌊 Blox Fruit (Universe ID: 994732206 — ทุก Sea & ทุก Raid)
-    [994732206] = { Name = "Blox Fruit", IsVVIP = false },
+    [994732206] = { 
+        Name = "Blox Fruit", 
+        IsVVIP = false,
+        URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Blox%20Fruit-obfuscated.lua"
+    },
 
     -- 🎣 FISCH (Universe ID: 5750914919 — ทุกเกาะและทุกโซนตกปลา)
-    [5750914919] = { Name = "FISCH", IsVVIP = false },
+    [5750914919] = { 
+        Name = "FISCH", 
+        IsVVIP = false,
+        URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/FISCH-obfuscated.lua"
+    },
 
     -- ⚔️ Slayers 2 (Universe ID: 5595353122)
     [5595353122] = { 
