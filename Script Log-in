@@ -139,10 +139,10 @@ local LANG_TH = {
     copyHwidBtn      = "HWID",
     premiumBtn       = "สมัคร VVIP",
     verifying        = "🔍 [1/2] กำลังตรวจสอบคีย์ Luarmor...",
-    superVIPOk       = "👑 [1/2] ยืนยันสิทธิ์ SuperVIP สำเร็จ...",
-    authSuccess      = "🚀 [2/2] เข้าสู่ระบบสำเร็จ! กำลังรัน ",
+    superVIPOk       = "👑 [SUPER-VIP] ยืนยันสิทธิ์ Super-VIP สำเร็จ...",
+    vipSuccess       = "⭐ [VIP] เข้าสู่ระบบสำเร็จ! กำลังรัน ",
     vvipSuccess      = "👑 [VVIP] ยืนยันสิทธิ์ VVIP สำเร็จ! กำลังรัน ",
-    superVIPSuccess  = "👑 [SUPER VIP] สิทธิ์ไม่จำกัดจอ! กำลังรัน ",
+    superVIPSuccess  = "👑 [SUPER-VIP] สิทธิ์ไม่จำกัดจอ! กำลังรัน ",
     vvipMapWarn      = "⚠️ แมพนี้ต้องใช้คีย์ VVIP! กำลังเปลี่ยนเส้นทาง...",
     keyEmpty         = "⚠️ กรุณากรอก Key ก่อนเข้าใช้งาน",
     keyBad           = "❌ Key ไม่ถูกต้องหรือหมดอายุ",
@@ -150,8 +150,7 @@ local LANG_TH = {
     copiedKey        = "คัดลอกลิงก์รับ Key เรียบร้อยแล้ว!",
     copiedHwid       = "คัดลอก HWID เรียบร้อยแล้ว!",
     copiedVvip       = "คัดลอกลิงก์ VVIP เรียบร้อยแล้ว!",
-    xenoBlocked      = "❌ ตัวรัน Xeno ไม่รองรับในแมพ ",
-    xenoBlockedSfx   = " กรุณาใช้ตัวรันอื่น",
+    xenoBlocked      = "❌ ตัวรัน Xeno ไม่รองรับการใช้งาน กรุณาใช้ตัวรันอื่น",
     retrying         = "🔄 รันสคริปต์ไม่สำเร็จ กำลังลองใหม่อัตโนมัติ...",
     retryFailed      = "⚠️ โหลดสคริปต์ล้มเหลว กดลองใหม่ หรือรอสักครู่",
     retryBtn         = "🔄 ลองใหม่",
@@ -166,10 +165,10 @@ local LANG_EN = {
     copyHwidBtn      = "HWID",
     premiumBtn       = "Get VVIP",
     verifying        = "🔍 [1/2] Verifying Luarmor key...",
-    superVIPOk       = "👑 [1/2] SuperVIP verified successfully...",
-    authSuccess      = "🚀 [2/2] Login successful! Launching ",
+    superVIPOk       = "👑 [SUPER-VIP] Super-VIP verified successfully...",
+    vipSuccess       = "⭐ [VIP] Login successful! Launching ",
     vvipSuccess      = "👑 [VVIP] VVIP access granted! Launching ",
-    superVIPSuccess  = "👑 [SUPER VIP] Unlimited access! Launching ",
+    superVIPSuccess  = "👑 [SUPER-VIP] Unlimited access! Launching ",
     vvipMapWarn      = "⚠️ This map requires a VVIP key! Redirecting...",
     keyEmpty         = "⚠️ Please enter your key first",
     keyBad           = "❌ Invalid key or expired",
@@ -177,8 +176,7 @@ local LANG_EN = {
     copiedKey        = "Get-key link copied!",
     copiedHwid       = "HWID copied!",
     copiedVvip       = "VVIP link copied!",
-    xenoBlocked      = "❌ Xeno executor is not supported in map ",
-    xenoBlockedSfx   = " — please use another executor",
+    xenoBlocked      = "❌ Xeno executor is not supported. Please use another executor",
     retrying         = "🔄 Script failed to run, retrying automatically...",
     retryFailed      = "⚠️ Script load failed — click retry or wait",
     retryBtn         = "🔄 Retry",
@@ -289,7 +287,7 @@ end
 -- 🎮 SMART ROUTER (จบในไฟล์เดียว)
 -- ==============================================================================
 local SupportedGames = {
-    -- [PlaceId] = { Name = "ชื่อเกม", IsVVIP = true/false, NoXeno = true/false }
+    -- [PlaceId] = { Name = "ชื่อเกม", IsVVIP = true/false, NoXeno = true/false, URL = "..." }
     
     -- 🆓 แมพฟรี (ทุกคนเล่นได้)
     [13379208636] = { Name = "Attack On Titan Revolution", IsVVIP = false, NoXeno = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/AOTR-obfuscated.lua" },
@@ -309,14 +307,20 @@ local SupportedGames = {
     [79091703265657] = { Name = "Blox Fruit", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Blox%20Fruit-obfuscated.lua" },
     [4442272183] = { Name = "Blox Fruit", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Blox%20Fruit-obfuscated.lua" },
     [7449423635] = { Name = "Blox Fruit", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Blox%20Fruit-obfuscated.lua" },
+    [85211729168715] = { Name = "Blox Fruit", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Blox%20Fruit-obfuscated.lua" },
+    [100117331123099] = { Name = "Blox Fruit", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Blox%20Fruit-obfuscated.lua" },
     [117539213094671] = { Name = "Roll a Gnome", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Roll%20a%20Gnome-obfuscated.lua" },
     [94640181989498] = { Name = "Chicken Fighter", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Grow%20a%20Chicken%20Fighter-obfuscated.lua" },
     [94939256104840] = { Name = "Chicken Fighter", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Grow%20a%20Chicken%20Fighter-obfuscated.lua" },
     [126884695634066] = { Name = "Grow a Garden 1", IsVVIP = false, URL = "https://raw.githubusercontent.com/Payomboyz0028/Yaranikaaaa/refs/heads/main/GGAGG" },
     [97598239454123] = { Name = "Grow a Garden 2", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Grow%20a%20garden%202-obfuscated.lua" },
+    [120945553785140] = { Name = "Grow a Garden 2", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Grow%20a%20garden%202-obfuscated.lua" },
     [74102906764176] = { Name = "Greedy Grower", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Greedy%20Grower-obfuscated.lua" },
+    [111907389166979] = { Name = "Greedy Grower", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Greedy%20Grower-obfuscated.lua" },
+    [131587836213405] = { Name = "Greedy Grower", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Greedy%20Grower-obfuscated.lua" },
     [124216119978534] = { Name = "Ride a Pet", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Ride%20a%20pet-obfuscated.lua" },
     [76377501906469] = { Name = "Steal An Anime EGG!", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Steal%20Anime%20Egg-obfuscated.lua" },
+    [135618011146990] = { Name = "Steal An Anime EGG!", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Steal%20Anime%20Egg-obfuscated.lua" },
     [16732694052] = { Name = "FISCH", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/FISCH-obfuscated.lua" },
     [72907489978215] = { Name = "FISCH", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/FISCH-obfuscated.lua" },
     [17722839796] = { Name = "FISCH", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/FISCH-obfuscated.lua" },
@@ -326,32 +330,36 @@ local SupportedGames = {
     -- 👑 แมพ VVIP (เฉพาะ Special Key หรือ Luarmor ระดับ VIP)
     [16205713724] = { Name = "Slayers 2", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/slayer2-obfuscated.lua" },
     [136406881576517] = { Name = "Slayers 2", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/slayer2-obfuscated.lua" },
-    [125927821145949] = { Name = "Mine a Mountain", IsVVIP = true },
-    [142823291] = { Name = "Murder Mystery 2", IsVVIP = true },
-    [107653945083776] = { Name = "Roll Anime To Fight", IsVVIP = true },
-    [133623616308412] = { Name = "Roll Anime To Fight", IsVVIP = true },
-    [107778070777162] = { Name = "Steal An Egg", IsVVIP = true },
-    [84515722934860] = { Name = "Anime Expedition", IsVVIP = true },
-    [117533937949084] = { Name = "Iron Soul", IsVVIP = true },
-    [116456628154258] = { Name = "Iron Soul Boss", IsVVIP = true },
-    [132445869992129] = { Name = "Iron Soul Boss", IsVVIP = true },
-    [136216144170036] = { Name = "Iron Soul Boss", IsVVIP = true },
-    [88838868041067] = { Name = "Iron Soul Tower", IsVVIP = true },
-    [91584731222940] = { Name = "Iron Soul Boss", IsVVIP = true },
-    [130098968673165] = { Name = "Iron Soul Boss", IsVVIP = true },
-    [119524374829397] = { Name = "Iron Soul Boss", IsVVIP = true },
-    [80693195250724] = { Name = "Iron Soul Boss", IsVVIP = true },
-    [112316840155266] = { Name = "Iron Soul Boss", IsVVIP = true },
-    [113290951185459] = { Name = "Anime Dice", IsVVIP = true },
-        [132785415090516] = { Name = "Iron Soul Boss", IsVVIP = true },
+    [75556147183481] = { Name = "Slayers 2", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/slayer2-obfuscated.lua" },
+    [125927821145949] = { Name = "Mine a Mountain", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Mine%20a%20Mountain-obfuscated.lua" },
+    [142823291] = { Name = "Murder Mystery 2", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Master%20Mystery%202-obfuscated.lua" },
+    [107653945083776] = { Name = "Roll Anime To Fight", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Roll%20Anime%20to%20FIGHT-obfuscated.lua" },
+    [133623616308412] = { Name = "Roll Anime To Fight", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Roll%20Anime%20to%20FIGHT-obfuscated.lua" },
+    [107778070777162] = { Name = "Steal An Egg", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Steal%20An%20Egg-obfuscated.lua" },
+    [106952885335586] = { Name = "Steal An Egg", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Steal%20An%20Egg-obfuscated.lua" },
+    [84515722934860] = { Name = "Anime Expedition", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Aneme%20Expredition-obfuscated.lua" },
+    [117533937949084] = { Name = "Iron Soul: Dungeon", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul-Dungeon-obfuscated.lua" },
+    [116456628154258] = { Name = "Iron Soul Boss", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Boss-obfuscated.lua" },
+    [132445869992129] = { Name = "Iron Soul Boss", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Boss-obfuscated.lua" },
+    [136216144170036] = { Name = "Iron Soul Boss", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Boss-obfuscated.lua" },
+    [88838868041067] = { Name = "Iron Soul Tower", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Tower-obfuscated.lua" },
+    [91584731222940] = { Name = "Iron Soul Boss", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Boss-obfuscated.lua" },
+    [130098968673165] = { Name = "Iron Soul Boss", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Boss-obfuscated.lua" },
+    [119524374829397] = { Name = "Iron Soul Boss", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Boss-obfuscated.lua" },
+    [80693195250724] = { Name = "Iron Soul Boss", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Boss-obfuscated.lua" },
+    [112316840155266] = { Name = "Iron Soul Boss", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Boss-obfuscated.lua" },
+    [132785415090516] = { Name = "Iron Soul Boss", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Iron%20Soul%20Boss-obfuscated.lua" },
+    [113290951185459] = { Name = "Anime Dice", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Anime%20Dice-obfuscated.lua" },
+    [110693415684859] = { Name = "Anime Dice", IsVVIP = true, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Anime%20Dice-obfuscated.lua" },
 
     -- ⚔️ Dungeon Lootr (Place IDs สำหรับ Lobby, Dungeon รวมทุกด่าน, และ AFK World)
-    [106484206883664] = { Name = "Dungeon Lootr", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/DungeonLootr-obfuscated.lua", LocalFile = "DungeonLootr.lua" },
-    [132285059959516] = { Name = "Dungeon Lootr", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/DungeonLootr-obfuscated.lua", LocalFile = "DungeonLootr.lua" },
-    [129976314326660] = { Name = "Dungeon Lootr", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/DungeonLootr-obfuscated.lua", LocalFile = "DungeonLootr.lua" },
+    [106484206883664] = { Name = "Dungeon Lootr", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/DungeonLootr-obfuscated.lua" },
+    [132285059959516] = { Name = "Dungeon Lootr", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/DungeonLootr-obfuscated.lua" },
+    [129976314326660] = { Name = "Dungeon Lootr", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/DungeonLootr-obfuscated.lua" },
 
     -- 🔨 +1 Loot a Forge
-    [118805555015549] = { Name = "+1 Loot a Forge", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/%2B1%20Loot%20a%20Forge", LocalFile = "+1 Forge.lua" },
+    [118805555015549] = { Name = "+1 Loot a Forge", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/%2B1%20Loot%20a%20Forge" },
+    [10684750879] = { Name = "+1 Loot a Forge", IsVVIP = false, URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/%2B1%20Loot%20a%20Forge" },
 }
 if getgenv then getgenv().PayomboyZ_SupportedGames = SupportedGames end
 _G.PayomboyZ_SupportedGames = SupportedGames
@@ -360,13 +368,12 @@ _G.PayomboyZ_SupportedGames = SupportedGames
 -- 🌌 UNIVERSE ID ROUTER (ครอบคลุมทุก Place ID ในจักรวาลเดียวกันโดยอัตโนมัติ)
 -- ==============================================================================
 local SupportedUniverses = {
-    -- [UniverseId] = { Name = "ชื่อเกม", IsVVIP = true/false, NoXeno = true/false, URL = "...", LocalFile = "..." }
+    -- [UniverseId] = { Name = "ชื่อเกม", IsVVIP = true/false, NoXeno = true/false, URL = "..." }
 
     -- ⚔️ Dungeon Lootr (Universe ID: 9656201728 — ครอบคลุม Lobby, 10 Dungeons, Raids, Payload, AFK World)
     [9656201728] = { 
         Name = "Dungeon Lootr", 
         IsVVIP = false,
-        LocalFile = "DungeonLootr.lua",
         URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/DungeonLootr-obfuscated.lua"
     },
 
@@ -417,25 +424,37 @@ local SupportedUniverses = {
     [118805555015549] = { 
         Name = "+1 Loot a Forge", 
         IsVVIP = false,
-        LocalFile = "+1 Forge.lua",
         URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/%2B1%20Loot%20a%20Forge"
     },
     [10684750879] = { 
         Name = "+1 Loot a Forge", 
         IsVVIP = false,
-        LocalFile = "+1 Forge.lua",
         URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/%2B1%20Loot%20a%20Forge"
+    },
+
+    -- 🥊 Gakuran (Universe ID: 9199655655)
+    [9199655655] = {
+        Name = "Gakuran",
+        IsVVIP = false,
+        URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Gakurun-obfuscated.lua"
+    },
+
+    -- 🚀 Anime Expedition (Universe ID: 6606806742)
+    [6606806742] = {
+        Name = "Anime Expedition",
+        IsVVIP = true,
+        URL = "https://raw.githubusercontent.com/payomboyz333/PAY-MB-YZ-HUB/refs/heads/main/Aneme%20Expredition-obfuscated.lua"
     },
 }
 if getgenv then getgenv().PayomboyZ_SupportedUniverses = SupportedUniverses end
 _G.PayomboyZ_SupportedUniverses = SupportedUniverses
 
--- 🔗 เชื่อมโยง Cascading Fallback: ตรวจ Place ID ใน SupportedGames ก่อนเสมอ (แมพที่แยก URL เฉพาะเช่น Iron Soul / Roll Anime)
--- หาก Place ID ไม่ได้ระบุแยกไว้ จะดึงจาก Universe ID อัตโนมัติ (Dungeon Lootr, AOTR, Arena Sniper, ฯลฯ)
+-- 🔗 เชื่อมโยง Cascading Fallback: ตรวจ Place ID ใน SupportedGames ก่อนเสมอ
+-- หาก Place ID ไม่ได้ระบุแยกไว้ จะดึงจาก Universe ID อัตโนมัติ (Dungeon Lootr, AOTR, Arena Sniper, Gakuran, ฯลฯ)
 setmetatable(SupportedGames, {
     __index = function(tbl, key)
         if typeof(key) == "number" then
-            local uData = SupportedUniverses and SupportedUniverses[game.GameId]
+            local uData = SupportedUniverses and (SupportedUniverses[game.GameId] or SupportedUniverses[key])
             if uData then
                 return uData
             end
@@ -653,7 +672,7 @@ local function RunFlowAuthWithRetry(targetUrl, userKey, maxRetries, onFailCallba
         end)
     end
 
-    -- ขั้นตอนที่ 1: โหลดซอร์สโค้ด (Local File → GitHub URL)
+    -- ขั้นตอนที่ 1: โหลดซอร์สโค้ดจาก GitHub URL (Pure Remote / Luarmor Ready)
     local fetchUrl = targetUrl
     if type(fetchUrl) == "string" and fetchUrl:find("raw.githubusercontent.com") and not fetchUrl:find("%?") then
         fetchUrl = fetchUrl .. "?t=" .. tostring(os.time())
@@ -661,39 +680,24 @@ local function RunFlowAuthWithRetry(targetUrl, userKey, maxRetries, onFailCallba
 
     local source = nil
 
-    -- ตรวจ Local File ก่อน (dev/test mode)
-    if typeof(readfile) == "function" and typeof(isfile) == "function" then
-        local pId = game.PlaceId
-        local gData = SupportedGames and SupportedGames[pId]
-        if gData and gData.LocalFile and isfile(gData.LocalFile) then
-            local okLocal, localContent = pcall(readfile, gData.LocalFile)
-            if okLocal and type(localContent) == "string" and #localContent > 50 then
-                source = localContent
-            end
+    for attempt = 1, maxRetries do
+        local okHttp, content = pcall(game.HttpGet, game, fetchUrl)
+        if okHttp and type(content) == "string" and #content > 50
+            and not content:find("404: Not Found") then
+            source = content
+            break
         end
-    end
-
-    -- ถ้าไม่มี Local File → โหลดจาก GitHub URL
-    if not source then
-        for attempt = 1, maxRetries do
-            local okHttp, content = pcall(game.HttpGet, game, fetchUrl)
-            if okHttp and type(content) == "string" and #content > 50
-                and not content:find("404: Not Found") then
-                source = content
-                break
-            end
-            -- Fallback: safeFetch (มี timeout 8s)
-            local fallback = safeFetch(fetchUrl)
-            if type(fallback) == "string" and #fallback > 50
-                and not fallback:find("404: Not Found") then
-                source = fallback
-                break
-            end
-            lastErr = "Network response empty or timed out (attempt " .. attempt .. ")"
-            if attempt < maxRetries then
-                warn(string.format("[PAYOMBØYZ HUB] Fetch attempt %d failed — retrying in 0.5s", attempt))
-                task.wait(0.5)
-            end
+        -- Fallback: safeFetch (มี timeout 8s)
+        local fallback = safeFetch(fetchUrl)
+        if type(fallback) == "string" and #fallback > 50
+            and not fallback:find("404: Not Found") then
+            source = fallback
+            break
+        end
+        lastErr = "Network response empty or timed out (attempt " .. attempt .. ")"
+        if attempt < maxRetries then
+            warn(string.format("[PAYOMBØYZ HUB] Fetch attempt %d failed — retrying in 0.5s", attempt))
+            task.wait(0.5)
         end
     end
 
@@ -843,72 +847,117 @@ end
 
 local function executorName()
     local name = nil
-    
-    -- 1. identifyexecutor / getgenv().identifyexecutor
-    pcall(function()
-        local id = identifyexecutor or (getgenv and getgenv().identifyexecutor)
-        if type(id) == "function" then
-            local n, v = id()
-            if n and type(n) == "string" and #n > 0 then
-                name = tostring(n)
-            end
-        end
-    end)
-    if name and name ~= "" and name:lower() ~= "unknown" then return name end
+    local version = nil
 
-    -- 2. getexecutorname / getgenv().getexecutorname
-    pcall(function()
-        local id = getexecutorname or (getgenv and getgenv().getexecutorname)
-        if type(id) == "function" then
-            local n, v = id()
-            if n and type(n) == "string" and #n > 0 then
-                name = tostring(n)
+    local function tryCall(getter)
+        if typeof(getter) == "function" then
+            local ok, n, v = pcall(getter)
+            if ok and n and type(n) == "string" and #n > 0 and n:lower() ~= "unknown" then
+                return n, (type(v) == "string" and #v > 0) and v or nil
             end
+        elseif typeof(getter) == "string" and #getter > 0 and getter:lower() ~= "unknown" then
+            return getter, nil
         end
-    end)
-    if name and name ~= "" and name:lower() ~= "unknown" then return name end
+        return nil, nil
+    end
 
-    -- 3. whatexecutor
-    pcall(function()
-        local id = whatexecutor or (getgenv and getgenv().whatexecutor)
-        if type(id) == "function" then
-            local n = id()
-            if n and type(n) == "string" and #n > 0 then
-                name = tostring(n)
-            end
+    -- 1. Standard API checks
+    if not name then
+        name, version = tryCall(identifyexecutor or (getgenv and getgenv().identifyexecutor))
+    end
+    if not name then
+        name, version = tryCall(getexecutorname or (getgenv and getgenv().getexecutorname))
+    end
+    if not name then
+        name, version = tryCall(whatexecutor or (getgenv and getgenv().whatexecutor))
+    end
+
+    -- 2. Specific closure checks
+    if not name then
+        if typeof(is_sirhurt_closure) == "function" then name = "SirHurt"
+        elseif typeof(is_synapse_function) == "function" then name = "Synapse"
+        elseif typeof(is_krnl_closure) == "function" then name = "KRNL"
+        elseif typeof(is_fluxus_closure) == "function" then name = "Fluxus"
+        elseif typeof(is_sentinel_closure) == "function" then name = "Sentinel"
+        elseif typeof(is_protosmasher_closure) == "function" then name = "ProtoSmasher"
+        elseif typeof(is_calamari_closure) == "function" then name = "Calamari"
+        elseif typeof(is_electron_closure) == "function" then name = "Electron"
+        elseif typeof(is_oxygen_closure) == "function" then name = "Oxygen U"
+        elseif typeof(is_solara_closure) == "function" then name = "Solara"
+        elseif typeof(is_celery_closure) == "function" then name = "Celery"
+        elseif typeof(is_wave_closure) == "function" then name = "Wave"
+        elseif typeof(is_xeno_closure) == "function" or typeof(isxenoclosure) == "function" then name = "Xeno"
         end
-    end)
-    if name and name ~= "" and name:lower() ~= "unknown" then return name end
+    end
 
-    -- 4. Environment Signature Probing
-    local env = (getgenv and getgenv()) or _G or {}
-    pcall(function()
-        if env.VOLT_LOADED or env.Volt or env._VOLT then name = "Volt"
-        elseif env.DELTA or env.Delta or env._DELTA then name = "Delta"
-        elseif env.CODEX or env.Codex or env._CODEX then name = "Codex"
-        elseif env.WAVE or env.Wave or env._WAVE then name = "Wave"
-        elseif env.SORANA or env.Sorana or env._SORANA then name = "Sorana"
-        elseif env.SOLARA or env.Solara or env._SOLARA then name = "Solara"
-        elseif env.XENO or env.Xeno or env._XENO then name = "Xeno"
-        elseif env.SWIFT or env.Swift or env._SWIFT then name = "Swift"
-        elseif env.ARCEUS or env.Arceus or env.ArceusX then name = "Arceus X"
-        elseif env.FLUXUS or env.fluxus or env.FLUXUS_LOADED then name = "Fluxus"
-        elseif env.VEGA_LOADED or env.VegaX then name = "Vega X"
-        elseif env.TRIGON or env.Trigon then name = "Trigon"
-        elseif env.HYDROGEN or env.Hydrogen then name = "Hydrogen"
-        elseif env.KRNL_LOADED or env.krnl then name = "KRNL"
+    -- 3. Environment Signature Probing (PC & Mobile)
+    if not name then
+        local g = (getgenv and getgenv()) or {}
+        local s = shared or {}
+        local function checkFlag(k)
+            return g[k] ~= nil or _G[k] ~= nil or s[k] ~= nil
+        end
+
+        if checkFlag("XENO") or checkFlag("Xeno") or checkFlag("xeno") or checkFlag("_XENO") or checkFlag("XENO_LOADED") or checkFlag("xeno_loaded") then name = "Xeno"
+        elseif checkFlag("DELTA_LOADED") or checkFlag("Delta") or checkFlag("delta") or checkFlag("DELTA") or checkFlag("_DELTA") then name = "Delta"
+        elseif checkFlag("CODEX_LOADED") or checkFlag("Codex") or checkFlag("codex") or checkFlag("CODEX") or checkFlag("_CODEX") then name = "Codex"
+        elseif checkFlag("ARCEUS") or checkFlag("Arceus") or checkFlag("arceus") or checkFlag("ArceusX") or checkFlag("ARCEUS_LOADED") then name = "Arceus X"
+        elseif checkFlag("WAVE_LOADED") or checkFlag("Wave") or checkFlag("wave") or checkFlag("WAVE") or checkFlag("_WAVE") then name = "Wave"
+        elseif checkFlag("SOLARA_LOADED") or checkFlag("Solara") or checkFlag("solara") or checkFlag("SOLARA") or checkFlag("_SOLARA") then name = "Solara"
+        elseif checkFlag("CELERY_LOADED") or checkFlag("Celery") or checkFlag("celery") or checkFlag("CELERY") then name = "Celery"
+        elseif checkFlag("FLUXUS_LOADED") or checkFlag("Fluxus") or checkFlag("fluxus") or checkFlag("FLUXUS") then name = "Fluxus"
+        elseif checkFlag("HYDROGEN_LOADED") or checkFlag("Hydrogen") or checkFlag("hydrogen") or checkFlag("HYDROGEN") then name = "Hydrogen"
+        elseif checkFlag("VEGA_LOADED") or checkFlag("VegaX") or checkFlag("vegax") or checkFlag("VEGA") then name = "Vega X"
+        elseif checkFlag("TRIGON_LOADED") or checkFlag("Trigon") or checkFlag("trigon") or checkFlag("TRIGON") then name = "Trigon"
+        elseif checkFlag("APPLEWARE") or checkFlag("Appleware") or checkFlag("appleware") then name = "Appleware"
+        elseif checkFlag("CUBIX") or checkFlag("Cubix") or checkFlag("cubix") then name = "Cubix"
+        elseif checkFlag("CRYPTIC") or checkFlag("Cryptic") or checkFlag("cryptic") then name = "Cryptic"
+        elseif checkFlag("EVON") or checkFlag("Evon") or checkFlag("evon") then name = "Evon"
+        elseif checkFlag("RONIX") or checkFlag("Ronix") or checkFlag("ronix") then name = "Ronix"
+        elseif checkFlag("LUNA") or checkFlag("Luna") or checkFlag("luna") then name = "Luna"
+        elseif checkFlag("FROSTWARE") or checkFlag("Frostware") or checkFlag("frostware") then name = "Frostware"
+        elseif checkFlag("MACSPLOIT") or checkFlag("Macsploit") or checkFlag("macsploit") then name = "Macsploit"
+        elseif checkFlag("SWIFT") or checkFlag("Swift") or checkFlag("swift") then name = "Swift"
+        elseif checkFlag("SERO") or checkFlag("Sero") or checkFlag("sero") then name = "Sero"
+        elseif checkFlag("VOLT_LOADED") or checkFlag("Volt") or checkFlag("volt") or checkFlag("_VOLT") then name = "Volt"
+        elseif checkFlag("SORANA") or checkFlag("Sorana") or checkFlag("sorana") or checkFlag("_SORANA") then name = "Sorana"
+        elseif checkFlag("ZORARA") or checkFlag("Zorara") or checkFlag("zorara") then name = "Zorara"
+        elseif checkFlag("KRNL_LOADED") or checkFlag("krnl") or checkFlag("KRNL") then name = "KRNL"
+        elseif checkFlag("REAL") or checkFlag("Real") or checkFlag("real") then name = "Real"
         elseif syn and type(syn) == "table" then name = "Synapse"
         end
-    end)
-    if name and name ~= "" then return name end
+    end
 
-    return "Unknown"
+    if not name or name == "" then
+        name = "Unknown"
+    end
+
+    if version and #version > 0 and not name:find(version, 1, true) then
+        return name .. " (" .. version .. ")"
+    end
+    return name
 end
 
 local function isXenoExecutor()
-    local name = executorName():lower()
-    local env = (getgenv and getgenv()) or _G or {}
-    return name:find("xeno") ~= nil or env.XENO ~= nil or env.Xeno ~= nil or env._XENO ~= nil
+    local name = tostring(executorName() or ""):lower()
+    if name:find("xeno") then return true end
+
+    local g = (getgenv and getgenv()) or {}
+    local s = shared or {}
+    local function checkFlag(k)
+        return g[k] ~= nil or _G[k] ~= nil or s[k] ~= nil
+    end
+
+    if checkFlag("XENO") or checkFlag("Xeno") or checkFlag("xeno") 
+       or checkFlag("_XENO") or checkFlag("XENO_LOADED") or checkFlag("xeno_loaded") then
+        return true
+    end
+
+    if typeof(is_xeno_closure) == "function" or typeof(isxenoclosure) == "function" then
+        return true
+    end
+
+    return false
 end
 
 local function deviceName()
@@ -1084,23 +1133,39 @@ local function PassToKeyChecker(key)
         local targetUrl = gameData and gameData.URL or "https://raw.githubusercontent.com/Payomboyz0028/Yaranikaaaa/refs/heads/main/WaitKey"
         local mapName = gameData and gameData.Name or "Game Hub"
 
-        -- ตรวจสอบตัวรัน Xeno เฉพาะในแมพที่ไม่รองรับ
-        if isXenoExecutor() and gameData and gameData.NoXeno then
+        -- ตรวจสอบตัวรัน Xeno (ไม่รองรับในระบบ)
+        if isXenoExecutor() then
             _isAuthenticating = false
             ClearSavedKeys()
-            CreateLoaderUI("❌ ตัวรัน Xeno ไม่รองรับในแมพ " .. mapName .. " กรุณาใช้ตัวรันอื่น", key)
+            CreateLoaderUI("❌ ตัวรัน Xeno ไม่รองรับการใช้งาน กรุณาใช้ตัวรันอื่น", key)
             return
         end
 
         local isSuperVIP = IsSuperVIPKey(key)
-        local isVVIP = IsVVIPKey(key)
+        local isVVIP = false
+        local isVIP = false
         local isAuthed = false
         local authReason = nil
 
-        if isSuperVIP or isVVIP then
+        if isSuperVIP then
+            -- Super-VIP: คีย์พิเศษ ไม่ต้องผ่าน Luarmor เข้าได้ทันที
             isAuthed = true
+            isVVIP = true
         else
-            isAuthed, authReason = VerifyKeyWithLuarmorAPI(key)
+            -- ทุกคีย์อื่น ต้องเช็คผ่าน Luarmor ก่อนเสมอ
+            local luOk, luReason = VerifyKeyWithLuarmorAPI(key)
+            if luOk then
+                isAuthed = true
+                -- ถ้าผ่าน Luarmor แล้ว มีใน Key.txt = VVIP, ถ้าไม่มี = VIP (คีย์ฟรี/ทั่วไป)
+                if IsVVIPKey(key) then
+                    isVVIP = true
+                else
+                    isVIP = true
+                end
+            else
+                isAuthed = false
+                authReason = luReason
+            end
         end
 
         if isAuthed then
@@ -1108,20 +1173,22 @@ local function PassToKeyChecker(key)
             DismissLoaderUI()
 
             -- ดึง Target URL จาก KeyEngine ก่อนเป็นอันดับแรกเพื่อความปลอดภัยสูงสุด
+            local defaultFallback = "https://raw.githubusercontent.com/Payomboyz0028/Yaranikaaaa/refs/heads/main/WaitKey"
             local engine = GetRemoteKeyData()
             local resolvedUrl = nil
             if engine and type(engine.GetGameURL) == "function" then
-                resolvedUrl = engine.GetGameURL(placeId, key)
+                pcall(function()
+                    resolvedUrl = engine.GetGameURL(placeId, key)
+                end)
             end
 
-            if resolvedUrl and resolvedUrl ~= "https://raw.githubusercontent.com/Payomboyz0028/Yaranikaaaa/refs/heads/main/WaitKey" then
+            if resolvedUrl and resolvedUrl ~= defaultFallback then
                 targetUrl = resolvedUrl
             elseif gameData and gameData.URL then
                 targetUrl = gameData.URL
             else
-                -- Fallback เดิมหาก KeyEngine ยังไม่ได้อัปเดตบน GitHub
-                if gameData and gameData.IsVVIP and not isVVIP then
-                    targetUrl = "https://raw.githubusercontent.com/Payomboyz0028/Yaranikaaaa/refs/heads/main/WaitKey"
+                if gameData and gameData.IsVVIP and not (isVVIP or isSuperVIP) then
+                    targetUrl = defaultFallback
                 end
             end
 
@@ -2259,19 +2326,10 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
         BorderSizePixel = 0,
     }, userInfoContainer)
     local execDisplayName = executorName()
-    local execColor = COLORS.cyan
+    local execColor = COLORS.success
     if isXenoExecutor() then
-        local pId = game.PlaceId
-        local gData = SupportedGames[pId]
-        if gData and gData.NoXeno then
-            execDisplayName = "Xeno (แมพนี้ไม่รองรับ)"
-            execColor = COLORS.danger
-        else
-            execDisplayName = "Xeno (จำกัด)"
-            execColor = COLORS.warning
-        end
-    else
-        execColor = COLORS.success
+        execDisplayName = "Xeno (ไม่รองรับ)"
+        execColor = COLORS.danger
     end
 
     local stats = {
@@ -2370,15 +2428,15 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
     }, gamesScroll)
 
     local supportedGamesList = {
-        -- FREE GAMES
+        -- 🆓 FREE GAMES
         {
             Name = "+1 Loot a Forge",
             FullName = "+1 Loot a Forge",
             UniverseId = 118805555015549,
             PlaceId = 118805555015549,
-            AltPlaceIds = {},
+            AltPlaceIds = { 10684750879 },
             IconId = 118805555015549,
-            Type = "VIP",
+            Type = "FREE",
             Keywords = "Auto Farm • Boss Hunter • Gacha",
         },
         {
@@ -2388,7 +2446,7 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
             PlaceId = 106484206883664,
             AltPlaceIds = { 132285059959516, 129976314326660 },
             IconId = 106484206883664,
-            Type = "VIP",
+            Type = "FREE",
             Keywords = "Kill Aura • 10 Dungeons • Raids",
         },
         {
@@ -2423,47 +2481,96 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
         {
             Name = "Arena Sniper",
             FullName = "Arena Sniper",
+            UniverseId = 9534705677,
             PlaceId = 122446657157717,
-            AltPlaceIds = { 126042865144779, 119259569670784, 90165746516953 },
+            AltPlaceIds = { 126042865144779, 119259569670784, 90165746516953, 74424488747487 },
             IconId = 122446657157717,
             Type = "FREE",
-            Keywords = "Auto Kill • Sniper",
-        },
-        {
-            Name = "Roll Anime To Fight",
-            FullName = "Roll Anime To Fight",
-            PlaceId = 107653945083776,
-            AltPlaceIds = {},
-            IconId = 107653945083776,
-            Type = "FREE",
-            Keywords = "RATF • Auto Roll",
+            Keywords = "Auto Kill • Silent Aim • Sniper",
         },
         {
             Name = "Gakuran",
             FullName = "Gakuran",
+            UniverseId = 9199655655,
             PlaceId = 128736949265057,
             AltPlaceIds = {},
             IconId = 128736949265057,
             Type = "FREE",
-            Keywords = "GKR • Auto Farm",
+            Keywords = "GKR • Auto Farm • Combat",
         },
         {
             Name = "99 Nights",
             FullName = "99 Night in the forest",
+            UniverseId = 7326934954,
             PlaceId = 126509999114328,
             AltPlaceIds = { 79546208627805 },
             IconId = 126509999114328,
             Type = "FREE",
-            Keywords = "99Nights • Forest",
+            Keywords = "99Nights • Forest Farm",
         },
         {
             Name = "Blox Fruit",
             FullName = "Blox Fruit",
+            UniverseId = 994732206,
             PlaceId = 2753915549,
-            AltPlaceIds = {},
+            AltPlaceIds = { 4442272183, 7449423635, 79091703265657, 85211729168715, 100117331123099 },
             IconId = 2753915549,
             Type = "FREE",
-            Keywords = "BF • Auto Farm",
+            Keywords = "BF • All Seas • Auto Farm",
+        },
+        {
+            Name = "Capybara Vs Plant",
+            FullName = "Capybara Vs Plant",
+            PlaceId = 104973076655377,
+            AltPlaceIds = {},
+            IconId = 104973076655377,
+            Type = "FREE",
+            Keywords = "CvsP • Auto Plant",
+        },
+        {
+            Name = "Grow a Garden 2",
+            FullName = "Grow a garden 2",
+            PlaceId = 97598239454123,
+            AltPlaceIds = { 120945553785140 },
+            IconId = 97598239454123,
+            Type = "FREE",
+            Keywords = "Garden 2 • Auto Harvest",
+        },
+        {
+            Name = "Grow a Garden 1",
+            FullName = "Grow a garden 1",
+            PlaceId = 126884695634066,
+            AltPlaceIds = {},
+            IconId = 126884695634066,
+            Type = "FREE",
+            Keywords = "GGAGG • Auto Garden",
+        },
+        {
+            Name = "Chicken Fighter",
+            FullName = "Grow a Chicken Fighter",
+            PlaceId = 94640181989498,
+            AltPlaceIds = { 94939256104840 },
+            IconId = 94640181989498,
+            Type = "FREE",
+            Keywords = "Chicken • Auto Fight • Train",
+        },
+        {
+            Name = "Greedy Grower",
+            FullName = "Greedy Grower",
+            PlaceId = 74102906764176,
+            AltPlaceIds = { 111907389166979, 131587836213405 },
+            IconId = 74102906764176,
+            Type = "FREE",
+            Keywords = "Grower • Auto Plant • Harvest",
+        },
+        {
+            Name = "Ride a Pet",
+            FullName = "Ride a Pet",
+            PlaceId = 124216119978534,
+            AltPlaceIds = {},
+            IconId = 124216119978534,
+            Type = "FREE",
+            Keywords = "Ride Pet • Auto Speed",
         },
         {
             Name = "Roll a Gnome",
@@ -2474,14 +2581,23 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
             Type = "FREE",
             Keywords = "Gnome • Auto Roll",
         },
+        {
+            Name = "Steal An Anime EGG!",
+            FullName = "Steal An Anime EGG!",
+            PlaceId = 76377501906469,
+            AltPlaceIds = { 135618011146990 },
+            IconId = 76377501906469,
+            Type = "FREE",
+            Keywords = "Steal Anime Egg • Auto Farm",
+        },
 
-        -- VVIP GAMES
+        -- 👑 VVIP GAMES
         {
             Name = "Slayers 2",
             FullName = "Slayers 2",
             UniverseId = 5595353122,
             PlaceId = 16205713724,
-            AltPlaceIds = { 136406881576517 },
+            AltPlaceIds = { 136406881576517, 75556147183481 },
             IconId = 16205713724,
             Type = "VVIP",
             Keywords = "Auto Farm • Fast Attack • Demon",
@@ -2493,7 +2609,7 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
             AltPlaceIds = {},
             IconId = 125927821145949,
             Type = "VVIP",
-            Keywords = "MaM • Auto Mine",
+            Keywords = "MaM • Auto Mine • ESP",
         },
         {
             Name = "Murder Mystery 2",
@@ -2502,29 +2618,30 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
             AltPlaceIds = {},
             IconId = 142823291,
             Type = "VVIP",
-            Keywords = "MM2 • Coin Farm",
+            Keywords = "MM2 • Coin Farm • ESP",
         },
         {
-            Name = "Capybara Vs Plant",
-            FullName = "Capybara Vs Plant",
-            PlaceId = 104973076655377,
-            AltPlaceIds = {},
-            IconId = 104973076655377,
+            Name = "Roll Anime To Fight",
+            FullName = "Roll Anime to FIGHT",
+            PlaceId = 107653945083776,
+            AltPlaceIds = { 133623616308412 },
+            IconId = 107653945083776,
             Type = "VVIP",
-            Keywords = "CvsP • Auto Plant",
+            Keywords = "RATF • Auto Roll • Fight",
         },
         {
             Name = "Steal An Egg",
             FullName = "Steal An Egg",
             PlaceId = 107778070777162,
-            AltPlaceIds = {},
+            AltPlaceIds = { 106952885335586 },
             IconId = 107778070777162,
             Type = "VVIP",
-            Keywords = "SaE • Auto Egg",
+            Keywords = "SaE • Auto Egg • Dash",
         },
         {
             Name = "Anime Expedition",
             FullName = "Anime Expedition",
+            UniverseId = 6606806742,
             PlaceId = 84515722934860,
             AltPlaceIds = {},
             IconId = 84515722934860,
@@ -2532,13 +2649,40 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
             Keywords = "AE • Auto Expedition",
         },
         {
-            Name = "Iron Soul",
-            FullName = "Iron Soul",
+            Name = "Anime Dice",
+            FullName = "Anime Dice",
+            PlaceId = 113290951185459,
+            AltPlaceIds = { 110693415684859 },
+            IconId = 113290951185459,
+            Type = "VVIP",
+            Keywords = "Dice • Auto Roll",
+        },
+        {
+            Name = "Iron Soul: Dungeon",
+            FullName = "Iron Soul: Dungeon",
             PlaceId = 117533937949084,
-            AltPlaceIds = { 116456628154258, 132445869992129 },
+            AltPlaceIds = {},
             IconId = 117533937949084,
             Type = "VVIP",
-            Keywords = "IRS • Auto Boss",
+            Keywords = "Iron Soul • Dungeon Farm",
+        },
+        {
+            Name = "Iron Soul Boss",
+            FullName = "Iron Soul Boss",
+            PlaceId = 116456628154258,
+            AltPlaceIds = { 132445869992129, 136216144170036, 91584731222940, 130098968673165, 119524374829397, 80693195250724, 112316840155266, 132785415090516 },
+            IconId = 116456628154258,
+            Type = "VVIP",
+            Keywords = "Iron Soul • Boss Farm",
+        },
+        {
+            Name = "Iron Soul Tower",
+            FullName = "Iron Soul Tower",
+            PlaceId = 88838868041067,
+            AltPlaceIds = {},
+            IconId = 88838868041067,
+            Type = "VVIP",
+            Keywords = "Iron Soul • Tower Climb",
         },
     }
 
@@ -2760,21 +2904,24 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
     textLabel(serviceCard, "ACTIVE SERVICE", UDim2.fromOffset(128, 11), UDim2.new(1, -318, 0, 17), Enum.Font.GothamBold, 9, COLORS.success)
     textLabel(serviceCard, "PayomboyZ Studios", UDim2.fromOffset(128, 29), UDim2.new(1, -318, 0, 24), Enum.Font.GothamBold, 15, COLORS.text)
     textLabel(serviceCard, "Verified client delivery", UDim2.fromOffset(128, 54), UDim2.new(1, -318, 0, 18), Enum.Font.Gotham, 10, COLORS.textFaint)
+    local isXenoOnMain = isXenoExecutor()
+    local execNameOnMain = executorName()
     local secureBadge = create("Frame", {
-        Position = UDim2.new(1, -180, 0.5, -17),
-        Size = UDim2.fromOffset(168, 34),
-        BackgroundColor3 = COLORS.glassDeep,
+        Position = UDim2.new(1, -190, 0.5, -17),
+        Size = UDim2.fromOffset(178, 34),
+        BackgroundColor3 = isXenoOnMain and Color3.fromRGB(55, 12, 22) or COLORS.glassDeep,
         BackgroundTransparency = 0.18,
         BorderSizePixel = 0,
     }, serviceCard)
     round(secureBadge, 9)
     create("UIStroke", {
-        Color = COLORS.cyan,
-        Thickness = 1,
-        Transparency = 0.3,
+        Color = isXenoOnMain and COLORS.danger or COLORS.cyan,
+        Thickness = 1.2,
+        Transparency = 0.2,
     }, secureBadge)
-    lucideIcon(secureBadge, "shield-check", UDim2.fromOffset(10, 9), UDim2.fromOffset(16, 16), COLORS.success, 5)
-    textLabel(secureBadge, "Security By Luarmour", UDim2.fromOffset(32, 0), UDim2.new(1, -36, 1, 0), Enum.Font.GothamBold, 9, COLORS.success)
+    lucideIcon(secureBadge, isXenoOnMain and "alert-triangle" or "monitor", UDim2.fromOffset(10, 9), UDim2.fromOffset(16, 16), isXenoOnMain and COLORS.danger or COLORS.cyan, 5)
+    local badgeTxt = textLabel(secureBadge, isXenoOnMain and "Xeno: ไม่รองรับ" or ("Exec: " .. execNameOnMain), UDim2.fromOffset(32, 0), UDim2.new(1, -36, 1, 0), Enum.Font.GothamBold, 9, isXenoOnMain and COLORS.danger or COLORS.cyan)
+    badgeTxt.TextTruncate = Enum.TextTruncate.AtEnd
 
     textLabel(mainPanel, "SECURE ACCESS", UDim2.fromOffset(22, 174), UDim2.new(1, -44, 0, 16), Enum.Font.GothamBold, 9, COLORS.cyan)
     textLabel(mainPanel, "Enter your key to launch PAYOMBØYZ HUB", UDim2.fromOffset(22, 190), UDim2.new(1, -44, 0, 19), Enum.Font.Gotham, 11, COLORS.textMuted)
@@ -3016,12 +3163,13 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
     local isXeno = isXenoExecutor()
     local placeId = game.PlaceId
     local gameData = SupportedGames[placeId]
-    if isXeno and gameData and gameData.NoXeno then
-        setStatus("⚠️ ตัวรัน Xeno ไม่รองรับในแมพ " .. (gameData.Name or "Game"), COLORS.warning)
+    if isXeno then
+        setStatus("❌ ตรวจพบตัวรัน Xeno (ไม่รองรับการทำงาน) กรุณาใช้ตัวรันอื่น", COLORS.danger, "Xeno executor is not supported by PAYOMBØYZ HUB.")
+        setButtonEnabled(redeem, false)
     elseif initialStatus then
         setStatus(initialStatus, COLORS.warning)
     else
-        setStatus("Ready for " .. detectedGame .. ".", COLORS.cyan)
+        setStatus("Ready for " .. detectedGame .. " • " .. executorName(), COLORS.cyan)
     end
 
     -- ==============================================================================
@@ -3084,9 +3232,10 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
         local mapName = gameData and gameData.Name or "Waiting Hub"
         local isVVIPMap = gameData and gameData.IsVVIP or false
 
-        -- ตรวจสอบตัวรัน Xeno เฉพาะในแมพที่ไม่รองรับ
-        if isXenoExecutor() and gameData and gameData.NoXeno then
-            setStatus("❌ ตัวรัน Xeno ไม่รองรับในแมพ " .. mapName .. " กรุณาใช้ตัวรันอื่น", COLORS.danger)
+        -- ตรวจสอบตัวรัน Xeno (ไม่รองรับการทำงานในระบบ)
+        if isXenoExecutor() then
+            setStatus("❌ ตัวรัน Xeno ไม่รองรับการใช้งาน กรุณาใช้ตัวรันอื่น", COLORS.danger, "Xeno executor is not supported by PAYOMBØYZ HUB.")
+            setButtonEnabled(redeem, false)
             return
         end
 
@@ -3104,37 +3253,56 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
             -- 1. ตรวจสอบแมพที่กำลังเล่น
             local targetUrl = gameData and gameData.URL or "https://raw.githubusercontent.com/Payomboyz0028/Yaranikaaaa/refs/heads/main/WaitKey"
 
-            -- 2. ตรวจสอบสิทธิ์ SuperVIP / VVIP / Luarmor
+            -- 2. ตรวจสอบสิทธิ์ SuperVIP / VVIP / VIP (Luarmor)
             local isSuperVIP = IsSuperVIPKey(key)
-            local isVVIP = IsVVIPKey(key)
+            local isVVIP = false
+            local isVIP = false
             local isAuthed = false
-            local luarmorReason = nil
+            local authReason = nil
 
-            if isSuperVIP or isVVIP then
-                setStatus(isSuperVIP and L("superVIPOk") or L("vvipSuccess"), COLORS.cyan)
+            if isSuperVIP then
+                -- Super-VIP: คีย์พิเศษ ไม่ต้องผ่าน Luarmor เข้าได้ทันที
+                setStatus(L("superVIPOk"), COLORS.cyan)
                 isAuthed = true
+                isVVIP = true
                 task.wait(0.15)
             else
+                -- ทุกคีย์อื่น ต้องเช็คผ่าน Luarmor ก่อนเสมอ
                 setStatus(L("verifying"), COLORS.cyan)
-                isAuthed, luarmorReason = VerifyKeyWithLuarmorAPI(key)
+                local luOk, luReason = VerifyKeyWithLuarmorAPI(key)
+                if luOk then
+                    isAuthed = true
+                    -- ถ้าผ่าน Luarmor แล้ว มีใน Key.txt = VVIP, ถ้าไม่มี = VIP (คีย์ฟรี/ทั่วไป)
+                    if IsVVIPKey(key) then
+                        isVVIP = true
+                    else
+                        isVIP = true
+                    end
+                else
+                    isAuthed = false
+                    authReason = luReason
+                end
             end
 
             -- 3. ตรวจสอบว่าคีย์ผ่านไหม
             if isAuthed then
+                local defaultFallback = "https://raw.githubusercontent.com/Payomboyz0028/Yaranikaaaa/refs/heads/main/WaitKey"
                 local engine = GetRemoteKeyData()
                 local resolvedUrl = nil
                 if engine and type(engine.GetGameURL) == "function" then
-                    resolvedUrl = engine.GetGameURL(game.PlaceId, key)
+                    pcall(function()
+                        resolvedUrl = engine.GetGameURL(game.PlaceId, key)
+                    end)
                 end
 
-                if resolvedUrl and resolvedUrl ~= "https://raw.githubusercontent.com/Payomboyz0028/Yaranikaaaa/refs/heads/main/WaitKey" then
+                if resolvedUrl and resolvedUrl ~= defaultFallback then
                     targetUrl = resolvedUrl
                 elseif gameData and gameData.URL then
                     targetUrl = gameData.URL
                 else
-                    if isVVIPMap and not isVVIP then
+                    if isVVIPMap and not (isVVIP or isSuperVIP) then
                         setStatus(L("vvipMapWarn"), COLORS.warning)
-                        targetUrl = "https://raw.githubusercontent.com/Payomboyz0028/Yaranikaaaa/refs/heads/main/WaitKey"
+                        targetUrl = defaultFallback
                         task.wait(0.8)
                     end
                 end
@@ -3146,14 +3314,14 @@ local function CreateLoaderUI(initialStatus, defaultKeyText)
                 elseif isVVIP then
                     setStatus(L("vvipSuccess") .. mapName, COLORS.success)
                 else
-                    setStatus(L("authSuccess") .. mapName, COLORS.success)
+                    setStatus(L("vipSuccess") .. mapName, COLORS.success)
                 end
                 task.wait(0.25)
 
                 ExecuteFlowAuth(targetUrl, key)
             else
                 _isAuthenticating = false
-                setStatus(luarmorReason or L("keyBad"), COLORS.danger)
+                setStatus(authReason or L("keyBad"), COLORS.danger)
                 setButtonEnabled(redeem, true)
             end
         end)
