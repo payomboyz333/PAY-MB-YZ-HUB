@@ -69,6 +69,43 @@ pcall(function()
     end
 end)
 
+-- Safe HTTP Fetch wrapper (supports native game:HttpGet with executor request fallback)
+local function safeFetch(url)
+    if not url or url == "" then return "" end
+
+    -- ลำดับที่ 1: ใช้ native game:HttpGet เสมอเพื่อไม่ให้โดน Bot Detection
+    local ok, content = pcall(game.HttpGet, game, url)
+    if ok and type(content) == "string" and #content > 50 and not content:find("automated source fetching") then
+        return content
+    end
+
+    -- ลำดับที่ 2: ใช้ executor request หาก game:HttpGet มีปัญหา
+    local httprequest = (typeof(request) == "function" and request)
+                     or (typeof(http_request) == "function" and http_request)
+                     or (typeof(syn) == "table" and typeof(syn.request) == "function" and syn.request)
+
+    if httprequest then
+        local okReq, res = pcall(function()
+            local headers = {}
+            -- Only use WinInet User-Agent on Windows PC to prevent mobile Cloudflare bot flags
+            local uis = game:GetService("UserInputService")
+            if uis and not (uis.TouchEnabled and not uis.KeyboardEnabled) then
+                headers["User-Agent"] = "Roblox/WinInet"
+            end
+            return httprequest({
+                Url = url,
+                Method = "GET",
+                Headers = headers
+            })
+        end)
+        if okReq and res and res.Body and #res.Body > 50 and not res.Body:find("automated source fetching") then
+            return res.Body
+        end
+    end
+
+    return (ok and content) or ""
+end
+
 local _isAuthenticating = false
 local _isScriptLaunched = false
 
@@ -543,41 +580,6 @@ local function getParentGui()
     return LocalPlayer:FindFirstChildOfClass("PlayerGui") or LocalPlayer:WaitForChild("PlayerGui", 5)
 end
 
--- Safe HTTP Fetch wrapper (supports native game:HttpGet with executor request fallback)
-local function safeFetch(url)
-    if not url or url == "" then return "" end
-
-    -- ลำดับที่ 1: ใช้ native game:HttpGet เสมอเพื่อไม่ให้โดน Bot Detection
-    local ok, content = pcall(game.HttpGet, game, url)
-    if ok and type(content) == "string" and #content > 50 and not content:find("automated source fetching") then
-        return content
-    end
-
-    -- ลำดับที่ 2: ใช้ executor request หาก game:HttpGet มีปัญหา
-    local httprequest = (typeof(request) == "function" and request)
-                     or (typeof(http_request) == "function" and http_request)
-                     or (typeof(syn) == "table" and typeof(syn.request) == "function" and syn.request)
-
-    if httprequest then
-        local okReq, res = pcall(function()
-            local headers = {}
-            -- Only use WinInet User-Agent on Windows PC to prevent mobile Cloudflare bot flags
-            if not (UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled) then
-                headers["User-Agent"] = "Roblox/WinInet"
-            end
-            return httprequest({
-                Url = url,
-                Method = "GET",
-                Headers = headers
-            })
-        end)
-        if okReq and res and res.Body and #res.Body > 50 and not res.Body:find("automated source fetching") then
-            return res.Body
-        end
-    end
-
-    return (ok and content) or ""
-end
 
 -- ฟังก์ชันทำลาย Loader UI ทันทีอย่างปลอดภัย (ใช้ตอน Auto-Login สำเร็จหรือสคริปต์เริ่มรัน)
 local function DismissLoaderUI()
@@ -723,9 +725,18 @@ local function RunFlowAuthWithRetry(targetUrl, userKey, maxRetries, onFailCallba
     DismissLoaderUI()
 
     task.spawn(function()
-        -- ส่ง Luarmor key เป็น arg แรก เพื่อให้ Luraph obfuscated scripts ผ่าน internal Luarmor validation
-        local runOk, runErr = pcall(fn, userKey)
+        -- สร้าง PBZ Auth Ticket สำหรับสคริปต์ที่มี Core Security Guard (เช่น Arena Sniper)
+        local authTicket = PBZ_CreateAuthTicket()
+        if _ENV then
+            _ENV.__PAYOMBOYZ_AUTH_TICKET = authTicket
+            _ENV.__PAYOMBOYZ_AUTH_TIME = os.time()
+        end
+
+        -- ส่ง authTicket เป็น arg แรก และ userKey เป็น arg 2 (รองรับทั้ง PBZ Guard และ Luraph)
+        local runOk, runErr = pcall(fn, authTicket, userKey)
         if not runOk then
+            _ENV.__PAYOMBOYZ_SCRIPT_LAUNCHED = false
+            _isScriptLaunched = false
             warn("[PAYOMBØYZ HUB] Target script runtime notice: " .. tostring(runErr))
         end
     end)
